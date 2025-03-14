@@ -909,7 +909,7 @@ export function AdaptHero() {
                   <Users className="w-4 h-4 text-blue-700 mr-2" />
                   <span className="text-xs font-medium text-blue-700">For Consumers</span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4">
                   Keep Track of Favorite Brands
                 </h2>
                 <p className="text-gray-600 mb-6 md:pr-12">
