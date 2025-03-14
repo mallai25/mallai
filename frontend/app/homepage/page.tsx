@@ -829,7 +829,7 @@ export default function HomePage() {
                           <div className="flex items-center">
       <span className="text-lg font-bold">{product.price}</span>
       <span className="text-sm text-gray-500 ml-1">
-        {product.brand === "ItsCalledW" ? "/tube" : 
+        {product.brand === "ItsCalledW" ? "/stick" : 
          product.brand === "Ketone-IQ" ? "/serving" :
          product.category === "Beverage" ? "/pack" : "/bag"}
       </span>
