@@ -1,0 +1,8 @@
+[data-dialog-overlay] {
+	background-color: transparent !important;
+}
+
+[data-dialog-content] {
+	border: none !important;
+	box-shadow: none !important;
+}

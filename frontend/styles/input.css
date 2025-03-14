@@ -1,0 +1,46 @@
+/* Modern input styles */
+.input,
+.textarea,
+[type='text'],
+[type='email'],
+[type='url'],
+[type='password'],
+[type='number'],
+[type='date'],
+[type='datetime-local'],
+[type='month'],
+[type='search'],
+[type='tel'],
+[type='time'],
+[type='week'],
+[multiple],
+textarea,
+select {
+  @apply border-gray-200 rounded-lg;
+  @apply focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-white;
+  @apply hover:border-gray-300;
+  @apply transition-all duration-200;
+}
+
+/* File input styles */
+.file-input-area {
+  @apply border-2 border-dashed rounded-lg;
+  @apply hover:border-emerald-500 hover:bg-emerald-50/50;
+  @apply focus:border-emerald-500 focus:ring-1 focus:ring-white;
+  @apply transition-all duration-200 ease-in-out;
+}
+
+/* Social input styles */
+.social-input {
+  @apply flex items-center gap-2 p-2 rounded-lg;
+  @apply border border-gray-200;
+  @apply hover:border-gray-300;
+  @apply focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-white;
+  @apply transition-all duration-200;
+}
+
+.social-input input {
+  @apply border-0 bg-transparent;
+  @apply focus:ring-0 focus:outline-none;
+  @apply placeholder:text-gray-400;
+}
