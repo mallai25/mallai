@@ -35,7 +35,7 @@ export default function JoinPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [selectedCategory, setSelectedCategory] = useState('Prelim');
+  const [selectedCategory, setSelectedCategory] = useState('Prelims');
 
   const [showInfluencerDialog, setShowInfluencerDialog] = useState(false);
   const [selectedInfluencer, setSelectedInfluencer] = useState(null);
@@ -519,7 +519,7 @@ export default function JoinPage() {
   <ScrollArea className="w-full">
     <div className="flex justify-start sm:justify-center px-4 sm:px-0 mb-4 overflow-x-auto">
       <div className="flex space-x-2 min-w-max scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-        {['Prelim', 'Beverage', 'Coffee', 'Candy', 'Personal Care', 'Alcohol', 'Supplements'].map((category) => (
+        {['Prelims', 'Beverage', 'Coffee', 'Candy', 'Personal Care', 'Alcohol', 'Supplements'].map((category) => (
           <motion.div
             key={category}
             className="flex-none first:ml-0"
@@ -552,7 +552,7 @@ export default function JoinPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 w-full px-4 sm:px-0 max-w-7xl">
               {productData
                 .filter(product => {
-                  if (selectedCategory === 'Prelim') return true;
+                  if (selectedCategory === 'Prelims') return true;
                   return product.category.toLowerCase() === selectedCategory.toLowerCase();
                 })
                 .slice(
@@ -723,14 +723,14 @@ export default function JoinPage() {
 
   {/* Add pagination */}
   {Math.ceil(productData.filter(product => {
-    if (selectedCategory === 'Prelim') return true;
+    if (selectedCategory === 'Prelims') return true;
     return product.category.toLowerCase() === selectedCategory.toLowerCase();
   }).length / PRODUCTS_PER_PAGE) > 1 && (
     <div className="flex justify-center mt-8 space-x-1">
       {Array.from({
         length: Math.ceil(
           productData.filter(product => {
-            if (selectedCategory === 'Prelim') return true;
+            if (selectedCategory === 'Prelims') return true;
             return product.category.toLowerCase() === selectedCategory.toLowerCase();
           }).length / PRODUCTS_PER_PAGE
         )

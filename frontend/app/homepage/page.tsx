@@ -72,7 +72,7 @@ export default function HomePage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [subscribedBrands, setSubscribedBrands] = useState<any[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('Prelim');
+  const [selectedCategory, setSelectedCategory] = useState('Prelims');
 
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -759,7 +759,7 @@ export default function HomePage() {
             <div className="w-full">
               <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex space-x-4 p-1">
-                  {['Prelim', 'Beverage', 'Coffee', 'Candy', 'Personal Care', 'Alcohol', 'Supplements'].map((category) => (
+                  {['Prelims', 'Beverage', 'Coffee', 'Candy', 'Personal Care', 'Alcohol', 'Supplements'].map((category) => (
                     <motion.div
                                key={category}
                                className="flex-none first:ml-0"
@@ -787,7 +787,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {productData
                 .filter(product => {
-                  if (selectedCategory === 'Prelim') return true;
+                  if (selectedCategory === 'Prelims') return true;
                   return product.category === selectedCategory;
                 })
                 .slice(
@@ -959,14 +959,14 @@ export default function HomePage() {
 
             {/* Pagination */}
             {Math.ceil(productData.filter(product => {
-              if (selectedCategory === 'Prelim') return true;
+              if (selectedCategory === 'Prelims') return true;
               return product.category === selectedCategory;
             }).length / 3) > 1 && (
               <div className="flex justify-center mt-8 space-x-1">
                 {Array.from({
                   length: Math.ceil(
                     productData.filter(product => {
-                      if (selectedCategory === 'Prelim') return true;
+                      if (selectedCategory === 'Prelims') return true;
                       return product.category === selectedCategory;
                     }).length / 3
                   )

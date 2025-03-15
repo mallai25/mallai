@@ -1,8 +1,8 @@
 // Influencers Profile Images
 import RyanProfile from './images/Ryan.jpg';
-import GeoffreyProfile from '@/app/ketone/Images/ketoneback.jpg';
-import JakeProfile from '@/app/Components/Images/Jake.jpg';
-import NinjaProfile from '@/app/Nutcase/Images/Ninja.png';
+import GeoffreyProfile from './images/ketoneback.jpg';
+import JakeProfile from './images/Jake.jpg';
+import NinjaProfile from './images/Ninja.png';
 
 // ItsCalledW
 import YellowW from './images/YellowW.png'
@@ -25,9 +25,9 @@ import JoyBlue from './images/blue.png'
 import JoyGreen from './images/green.png'
 
 // Nutcase
-import Chocolate from '@/app/Nutcase/Images/Choco.png';
-import Vanilla from '@/app/Nutcase/Images/Vanilla.png';
-import Strawberry from '@/app/Nutcase/Images/Berry.png';
+import Chocolate from './images/Choco.png';
+import Vanilla from './images/Vanilla.png';
+import Strawberry from './images/Berry.png';
 
 // Influencer data with social media accounts
 export const influencers = [
