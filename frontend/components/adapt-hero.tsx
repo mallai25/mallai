@@ -247,10 +247,6 @@ export function AdaptHero() {
       answer: "A creamy paste made from ground sesame seeds, often used in hummus, dressings, and desserts for its nutty flavor and smooth texture."
     },
     {
-      question: "Why are almonds considered a superfood?",
-      answer: "They are high in vitamin E, magnesium, and healthy fats, which contribute to better skin health, improved brain function, and heart protection."
-    },
-    {
       question: "Are cashews actually nuts?",
       answer: "Cashews are seeds that grow on the bottom of cashew apples. They require careful processing to remove toxic compounds before eating."
     }
