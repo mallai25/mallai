@@ -886,7 +886,7 @@ function OnboardingContent() {
       case 'pro':
         return {
           name: 'Pro Plan',
-          price: billingOption === 'annual' ? '$372/ 6 months' : '$186/ 6 months',
+          price: billingOption === 'annual' ? '$372/ 12 months' : '$186/ 6 months',
           commitment: billingOption === 'annual' ? '12 Month Commitment' : '6 Month Commitment',
           color: 'bg-blue-500',
           textColor: 'text-blue-500',

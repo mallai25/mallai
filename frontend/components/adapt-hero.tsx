@@ -243,10 +243,6 @@ export function AdaptHero() {
       answer: "Quinoa is technically a seed but classified as a whole grain due to its fiber and nutrient profile, making it a great gluten-free alternative."
     },
     {
-      question: "What are the health benefits of avocado?",
-      answer: "Packed with heart-healthy monounsaturated fats, potassium, and fiber, avocados help support brain function and reduce inflammation."
-    },
-    {
       question: "What is tahini used for?",
       answer: "A creamy paste made from ground sesame seeds, often used in hummus, dressings, and desserts for its nutty flavor and smooth texture."
     },
