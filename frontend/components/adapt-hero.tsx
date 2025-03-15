@@ -222,32 +222,43 @@ export function AdaptHero() {
   }
 
   const suggestions = [
-
     {
-      question: "Matcha green tea benefits?",
-      answer: "Rich in antioxidants, boosts metabolism, improves focus, and provides steady energy without jitters."
+      question: "What makes matcha unique?",
+      answer: "Unlike regular green tea, matcha uses whole powdered leaves, providing higher antioxidant levels and a rich umami flavor."
     },
     {
-      question: "Chia seeds health benefits?",
-      answer: "High in omega-3s, fiber, protein, and minerals. Supports heart health and helps with weight management."
+      question: "Why are chia seeds popular in smoothies?",
+      answer: "They absorb liquid and form a gel-like texture, adding thickness while providing fiber, omega-3s, and plant-based protein."
     },
     {
-      question: "Greek yogurt nutrition facts?",
-      answer: "High in protein (15-20g per serving), probiotics, calcium, and vitamin B12. Lower in sugar than regular yogurt."
+      question: "How is Greek yogurt different from regular yogurt?",
+      answer: "It’s strained to remove excess whey, making it thicker, higher in protein, and lower in sugar while maintaining probiotic benefits."
     },
     {
-      question: "Apple Watch bands compatibility?",
-      answer: "Most bands work across Apple Watch generations if size matches (41/40/38mm or 45/44/42mm)."
+      question: "What’s special about dark chocolate?",
+      answer: "It contains flavonoids, which may improve heart health, and natural compounds that boost serotonin levels for mood enhancement."
     },
     {
-      question: "Dark chocolate benefits?",
-      answer: "Rich in antioxidants, may lower blood pressure, improve brain function, and boost mood. Best with 70%+ cocoa."
+      question: "Is quinoa a grain or a seed?", 
+      answer: "Quinoa is technically a seed but classified as a whole grain due to its fiber and nutrient profile, making it a great gluten-free alternative."
     },
     {
-      question: "Nike Air Max sizing guide?",
-      answer: "Generally runs true to size. For wider feet, consider going up 0.5 size. Different models may vary slightly."
+      question: "What are the health benefits of avocado?",
+      answer: "Packed with heart-healthy monounsaturated fats, potassium, and fiber, avocados help support brain function and reduce inflammation."
     },
-  ]
+    {
+      question: "What is tahini used for?",
+      answer: "A creamy paste made from ground sesame seeds, often used in hummus, dressings, and desserts for its nutty flavor and smooth texture."
+    },
+    {
+      question: "Why are almonds considered a superfood?",
+      answer: "They are high in vitamin E, magnesium, and healthy fats, which contribute to better skin health, improved brain function, and heart protection."
+    },
+    {
+      question: "Are cashews actually nuts?",
+      answer: "Cashews are seeds that grow on the bottom of cashew apples. They require careful processing to remove toxic compounds before eating."
+    }
+];
 
   const [buttonText, setButtonText] = useState("Join list"); // New state for button text
 
