@@ -1407,7 +1407,7 @@ function OnboardingContent() {
                             htmlFor="hasGS1Barcode"
                             className="text-sm text-gray-700 mt-0.5"
                           >
-                            I confirm that my brand already has GS1 Standard Barcode
+                            I confirm that my brand already has GS1 Standard Barcodes
                           </Label>
                         </div>
 
