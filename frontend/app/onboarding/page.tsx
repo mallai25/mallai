@@ -1497,7 +1497,7 @@ function OnboardingContent() {
                           onClick={() => setShowGS1Modal(true)}
                           className="w-full bg-gray-800 hover:bg-gray-900 text-white rounded-xl py-4 transition-all duration-300"
                         >
-                          Confirm your Current GS1 Standards Barcodes
+                          Confirm Current GS1 Standards Barcodes
                         </Button>
                       </div>
                     )}
