@@ -189,7 +189,7 @@ function GS1PurchaseModal({ isOpen, onClose, isConditioned = false }) {
           <DialogDescription>
             {isConditioned 
               ? "Complete the form to confirm your existing GS1 barcodes." 
-              : "Complete the form below to request purchase of GS1 barcodes for your brand."}
+              : "Complete the form to request purchase of GS1 barcodes for your brand."}
           </DialogDescription>
         </DialogHeader>
         

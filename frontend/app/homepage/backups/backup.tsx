@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
-import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '../../FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '../../../FirebaseConfig';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
@@ -25,9 +25,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Eye } from 'lucide-react';
 
 import LogoImage from '../login/Images/download.png';
-import { InfluencerDialog } from '../join/Components/InfluencerDialog';
-import { ProductDetailDialog } from '../join/Components/ProductDetailDialog';
-import { productData } from '../join/mockdata';
+import { InfluencerDialog } from '../../join/Components/InfluencerDialog';
+import { ProductDetailDialog } from '../../join/Components/ProductDetailDialog';
+import { productData } from '../../join/mockdata';
 
 import { Home as HomeIcon } from 'lucide-react'; // rename to avoid conflict
 import { Calendar } from 'lucide-react';

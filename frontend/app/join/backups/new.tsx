@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../../FirebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ArrowLeft, ChevronRight, Gift, User, Upload, Check, ArrowRight, Package, BarChart, QrCode, PodcastIcon } from 'lucide-react';
@@ -20,9 +20,9 @@ import { Label } from "@/components/ui/label"
 import LogoImage from '../login/Images/download.png';
 import HeroImage from '../login/Images/cpg.jpg';
 
-import { InfluencerDialog } from './Components/InfluencerDialog';
-import { ProductDetailDialog } from './Components/ProductDetailDialog';
-import { productData, influencers } from './mockdata';
+import { InfluencerDialog } from '../Components/InfluencerDialog';
+import { ProductDetailDialog } from '../Components/ProductDetailDialog';
+import { productData, influencers } from '../mockdata';
 
 export default function JoinPage() {
   const router = useRouter();

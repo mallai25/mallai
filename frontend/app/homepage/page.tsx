@@ -1,347 +1,262 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import Image from 'next/image';
-import Link from 'next/link';
-import { Label } from '@/components/ui/label';
-import { useRouter } from 'next/navigation';
-import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '../../FirebaseConfig';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { updateProfile } from 'firebase/auth';
-import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import { 
-  User, LogOut, Home, Gift, Award, BarChart, 
-  MessageSquare, Settings, MapPin, Mail, Upload, 
-  Check, X, Clock, ChevronRight, Users, QrCode
-} from 'lucide-react';
+import { DialogTrigger } from "@/components/ui/dialog"
 
-import { motion, AnimatePresence } from "framer-motion";
-import axios from 'axios';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Eye } from 'lucide-react';
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import Image from "next/image"
+import Link from "next/link"
+import { Label } from "@/components/ui/label"
+import { useRouter } from "next/navigation"
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
+import { updateProfile } from "firebase/auth"
+import { doc, getDoc, updateDoc } from "firebase/firestore"
+import axios from "axios"
+import {
+  User,
+  LogOut,
+  Home,
+  Gift,
+  BarChart,
+  MessageSquare,
+  Settings,
+  MapPin,
+  Mail,
+  Upload,
+  Check,
+  Clock,
+  ChevronRight,
+  Users,
+  QrCode,
+} from "lucide-react"
+
+import { motion } from "framer-motion"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Eye } from "lucide-react"
 
 import LogoImage from '../login/Images/download.png';
 import { InfluencerDialog } from '../join/Components/InfluencerDialog';
 import { ProductDetailDialog } from '../join/Components/ProductDetailDialog';
-import { productData } from '../join/mockdata';
 
-import { Home as HomeIcon } from 'lucide-react'; // rename to avoid conflict
-import { Calendar } from 'lucide-react';
+// Add import for the live mock data at the top of the file
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  productData,
+  rewardsCampaigns,
+  pollsParticipation,
+  RewardThen,
+  subscribedBrands,
+  influencers,
+} from "../join/mockdata"
+import { rewardsCampaignsLive, pollsParticipationLive, subscribedBrandsLive } from "../join/mock-data-live"
+
+import { HomeIcon } from "lucide-react" // rename to avoid conflict
+import { Calendar } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface Stamp {
-  stamped: boolean;
+  stamped: boolean
 }
 
 interface PurchaseHistory {
-  product: string;
-  date: string;
+  product: string
+  date: string
 }
 
 interface Participant {
-  id: string;
-  name: string;
-  email: string;
-  location: string;
-  joinDate: string;
-  avatar?: string;
-  purchaseHistory?: PurchaseHistory[];
-  stamps?: Stamp[];
+  id: string
+  name: string
+  email: string
+  location: string
+  joinDate: string
+  avatar?: string
+  purchaseHistory?: PurchaseHistory[]
+  stamps?: Stamp[]
 }
 
 export default function HomePage() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [userAddress, setUserAddress] = useState('');
-  const [userLocation, setUserLocation] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [subscribedBrands, setSubscribedBrands] = useState<any[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('Prelims');
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [userName, setUserName] = useState("")
+  const [userEmail, setUserEmail] = useState("")
+  const [userAddress, setUserAddress] = useState("")
+  const [userLocation, setUserLocation] = useState("")
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [activeTab, setActiveTab] = useState("dashboard")
+  const [subscribedBrandsList, setSubscribedBrandsList] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState("Prelims")
+  // Add state for the data mode toggle
+  const [dataMode, setDataMode] = useState<"demo" | "live">("demo")
 
-  const [showProductDialog, setShowProductDialog] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [showCampaignDialog, setShowCampaignDialog] = useState(false);
-  const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
-  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
-  const [currentProductPage, setCurrentProductPage] = useState(0);
-  const PRODUCTS_PER_PAGE = 3;
-  const [showInfluencerDialog, setShowInfluencerDialog] = useState(false);
-  const [selectedInfluencer, setSelectedInfluencer] = useState(null);
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
+  const [showProductDialog, setShowProductDialog] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [showCampaignDialog, setShowCampaignDialog] = useState(false)
+  const [selectedCampaign, setSelectedCampaign] = useState<any>(null)
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null)
+  const [currentProductPage, setCurrentProductPage] = useState(0)
+  const PRODUCTS_PER_PAGE = 3
+  const [showInfluencerDialog, setShowInfluencerDialog] = useState(false)
+  const [selectedInfluencer, setSelectedInfluencer] = useState<any>(null)
+  const [age, setAge] = useState("")
+  const [gender, setGender] = useState("")
+  const [expandedFeatures, setExpandedFeatures] = useState(false)
 
+  // Update the useEffect to handle data mode
   useEffect(() => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged(async (user) => {
       if (user) {
-        setUser(user);
-        setUserEmail(user.email || '');
-        setUserName(user.displayName || '');
-        
+        setUser(user)
+        setUserEmail(user.email || "")
+        setUserName(user.displayName || "")
+
         // Fetch user data from Firestore
         try {
-          const userDoc = await getDoc(doc(FIREBASE_DB, 'users', user.uid));
+          const userDoc = await getDoc(doc(FIREBASE_DB, "users", user.uid))
           if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setUserAddress(userData.address || '');
-            setUserLocation(userData.location || '');
-            setProfileImage(userData.profileImage || null);
-            setAge(userData.age || '');
-            setGender(userData.gender || '');
+            const userData = userDoc.data()
+            setUserAddress(userData.address || "")
+            setUserLocation(userData.location || "")
+            setProfileImage(userData.profileImage || null)
+            setAge(userData.age || "")
+            setGender(userData.gender || "")
           }
-          
-          // Fetch sample subscribed brands (this would be dynamically loaded in a real app)
-          // For now, we'll create mock data
 
-          const mockBrands = [
-            // {
-            //   id: '1',
-            //   name: 'JoyRide Candy Co.',
-            //   logo: '/joy.jpeg',
-            //   campaigns: 2
-            // },
-            // {
-            //   id: '2',
-            //   name: 'Prime Hydration',
-            //   logo: '/prof.jpeg',
-            //   campaigns: 1
-            // },
-            // {
-            //   id: '3',
-            //   name: 'Chamberlain Coffee',
-            //   logo: '/logo.png',
-            //   campaigns: 3
-            // }
-          ];
-          
-          setSubscribedBrands(mockBrands);
+          // Set mock subscribed brands based on data mode
+          setSubscribedBrandsList(dataMode === "demo" ? subscribedBrands : subscribedBrandsLive)
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          console.error("Error fetching user data:", error)
         }
-        
-        setLoading(false);
       } else {
-        // Redirect to login if not authenticated
-        router.push('/login');
+        // Instead of redirecting, set default guest values
+        setUser(null)
+        setUserName("Guest")
+        setSubscribedBrandsList([])
       }
-    });
 
-    return () => unsubscribe();
-  }, [router]);
+      setLoading(false)
+    })
 
+    return () => unsubscribe()
+  }, [router, dataMode])
+
+  // Updated profile image upload function using axios
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+    const file = e.target.files?.[0]
+    if (!file || !user) return
 
-    setUploadingImage(true);
-    
+    setUploadingImage(true)
+
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      const formData = new FormData()
+      formData.append("image", file)
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/upload`, 
-        formData
-      );
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/upload`, formData)
 
       if (response.data.success) {
-        const downloadUrl = response.data.data.secure_url;
-        
+        const downloadUrl = response.data.data.secure_url
+
         // Update the user profile
-        await updateProfile(user, { photoURL: downloadUrl });
-        
+        await updateProfile(user, { photoURL: downloadUrl })
+
         // Update Firestore document
-        await updateDoc(doc(FIREBASE_DB, 'users', user.uid), {
-          profileImage: downloadUrl
-        });
-        
+        await updateDoc(doc(FIREBASE_DB, "users", user.uid), {
+          profileImage: downloadUrl,
+        })
+
         // Update state
-        setProfileImage(downloadUrl);
+        setProfileImage(downloadUrl)
       }
     } catch (error) {
-      console.error('Error uploading profile image:', error);
+      console.error("Error uploading profile image:", error)
+
+      // Remove the fallback to Firebase Storage since we're matching the provided code
     } finally {
-      setUploadingImage(false);
+      setUploadingImage(false)
     }
-  };
+  }
 
   const handleUpdateProfile = async () => {
-    if (!user) return;
-    
+    if (!user) return
+
     try {
       // Update displayName in Firebase Auth
-      await updateProfile(user, { displayName: userName });
-      
+      await updateProfile(user, { displayName: userName })
+
       // Update user document in Firestore
-      await updateDoc(doc(FIREBASE_DB, 'users', user.uid), {
+      await updateDoc(doc(FIREBASE_DB, "users", user.uid), {
         displayName: userName,
         address: userAddress,
         location: userLocation,
         age: age,
         gender: gender,
-        updatedAt: new Date()
-      });
-      
-      alert('Profile updated successfully!');
-      
+        updatedAt: new Date(),
+      })
+
+      alert("Profile updated successfully!")
     } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Failed to update profile. Please try again.');
+      console.error("Error updating profile:", error)
+      alert("Failed to update profile. Please try again.")
     }
-  };
+  }
 
   const handleSignOut = async () => {
     try {
-      await FIREBASE_AUTH.signOut();
-      router.push('/join');
+      await FIREBASE_AUTH.signOut()
+      router.push("/join")
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error)
     }
-  };
+  }
 
   const handleProductQRClick = (product: any) => {
-    setSelectedProduct(product);
-    setShowProductDialog(true);
-  };
+    setSelectedProduct(product)
+    setShowProductDialog(true)
+  }
 
+  // Update the handleCampaignClick function to use the correct data based on mode
   const handleCampaignClick = (campaign: any) => {
-    setSelectedCampaign(campaign);
-    setSelectedParticipant(RewardThen[0]); // For demo, select first participant
-    setShowCampaignDialog(true);
-  };
+    setSelectedCampaign(campaign)
+    setSelectedParticipant(RewardThen[0]) // For demo, select first participant
+    setShowCampaignDialog(true)
+  }
 
-  const handleInfluencerClick = (influencer) => {
-    setSelectedInfluencer(influencer);
-    setShowInfluencerDialog(true);
-  };
+  const handleInfluencerClick = (influencer: any) => {
+    // Find the matching influencer from the influencers array
+    const matchingInfluencer = influencers.find((inf) => inf.id === influencer.id)
+    setSelectedInfluencer(matchingInfluencer || influencer)
+    setShowInfluencerDialog(true)
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
       </div>
-    );
+    )
   }
 
-  // Example data for rewards and polls
-  const rewardsCampaigns = [
-    // {
-    //   id: 1,
-    //   brand: 'JoyRide Candy Co.',
-    //   name: 'Summer Sweepstakes',
-    //   uploadedReceipts: 4,
-    //   totalRequired: 6,
-    //   status: 'active',
-    //   endDate: '2024-04-15',
-    //   purchaseHistory: [
-    //     { product: 'Blue Raspberry Candy Strips', date: '2024-03-14', amount: '$12.99' },
-    //     { product: 'Green Apple Candy Strips', date: '2024-03-10', amount: '$12.99' },
-    //     { product: 'Sour Strawberry Strips', date: '2024-03-05', amount: '$12.99' },
-    //     { product: 'Lemon Candy Strips', date: '2024-03-01', amount: '$12.99' }
-    //   ],
-    //   receipts: [
-    //     { id: 1, date: '2024-03-14', store: 'Sweet Spot Central', amount: '$12.99' },
-    //     { id: 2, date: '2024-03-10', store: 'Candy Corner', amount: '$12.99' },
-    //     { id: 3, date: '2024-03-05', store: 'Mall Candy Shop', amount: '$12.99' },
-    //     { id: 4, date: '2024-03-01', store: 'Sweet Treats', amount: '$12.99' }
-    //   ],
-    //   prize: 'Win a Year Supply of JoyRide Candy'
-    // },
-    // {
-    //   id: 2,
-    //   brand: 'Chamberlain Coffee',
-    //   name: 'New Flavor Launch',
-    //   uploadedReceipts: 2,
-    //   totalRequired: 4,
-    //   status: 'new',
-    //   endDate: '2024-04-30',
-    //   purchaseHistory: [
-    //     { product: 'Matcha Green Tea Latte', date: '2024-03-12', amount: '$5.99' },
-    //     { product: 'Vanilla Bean Cold Brew', date: '2024-03-08', amount: '$4.99' }
-    //   ],
-    //   receipts: [
-    //     { id: 1, date: '2024-03-12', store: 'Chamberlain Cafe', amount: '$5.99' },
-    //     { id: 2, date: '2024-03-08', store: 'Coffee Corner', amount: '$4.99' }
-    //   ],
-    //   prize: 'Early Access to New Flavors'
-    // }
-  ];
-
-  const pollsParticipation = [
-    // {
-    //   id: 1,
-    //   brand: 'JoyRide Candy Co.',
-    //   title: 'New Flavor Preference',
-    //   date: '2023-07-10',
-    //   status: 'completed'
-    // },
-    // {
-    //   id: 2,
-    //   brand: 'Prime Hydration',
-    //   title: 'Package Design Feedback',
-    //   date: '2023-07-05',
-    //   status: 'completed'
-    // }
-  ];
-
-  // Add mockup data for RewardThen
-  const RewardThen = [
-    // {
-    //   id: '1',
-    //   name: 'John Doe',
-    //   email: 'john@example.com',
-    //   location: 'New York',
-    //   joinDate: '2023-01-15',
-    //   purchaseHistory: [
-    //     { product: 'Blue Raspberry Strips', date: '2024-03-14' },
-    //     { product: 'Sour Apple Strips', date: '2024-03-10' },
-    //     { product: 'Strawberry Strips', date: '2024-03-05' },
-    //   ],
-    //   stamps: [
-    //     { stamped: true },
-    //     { stamped: true },
-    //     { stamped: true },
-    //     { stamped: false },
-    //     { stamped: false },
-    //     { stamped: false },
-    //   ]
-    // },
-    // Add more mock participants as needed
-  ];
-
   const renderTabContent = () => {
-    switch(activeTab) {
-      case 'dashboard':
+    switch (activeTab) {
+      case "dashboard":
         return (
           <>
             {/* Welcome Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 flex justify-between items-center">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome, {userName || 'User'}!</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Welcome, {userName || "User"}!</h1>
                 <p className="text-gray-600 mt-1">Track your rewards campaigns and poll participation.</p>
               </div>
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm relative">
                 {profileImage ? (
-                  <img 
-                    src={profileImage} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={profileImage || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-blue-50">
                     <User className="w-8 h-8 text-blue-300" />
@@ -351,227 +266,210 @@ export default function HomePage() {
             </div>
 
             {/* Rewards Campaigns Section */}
-            <Card className="mb-6">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <Card className="mb-6 overflow-hidden border-0 shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                 <div className="flex items-center space-x-2">
-                  <Gift className="w-6 h-6 text-emerald-600" />
-                  <CardTitle className="text-xl font-bold">Rewards Campaigns</CardTitle>
+                  <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-lg shadow-md">
+                    <Gift className="w-6 h-6 text-white" />
+                  </div>
+                  <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                    Rewards Campaigns
+                  </CardTitle>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-full hover:bg-emerald-50 transition-all group"
-                  onClick={() => setActiveTab('polls')}
+                  className="rounded-full hover:bg-blue-100 transition-all group"
+                  onClick={() => {
+                    setActiveTab("polls")
+                    window.scrollTo(0, 0)
+                  }}
                 >
                   Next
-                  <ChevronRight className="ml-1 w-5 h-5 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRight className="ml-1 w-5 h-5 text-blue-600 group-hover:translate-x-0.5 transition-transform" />
                 </Button>
               </CardHeader>
-              <CardContent>
-              {rewardsCampaigns.length > 0 ? (
-  rewardsCampaigns.map((campaign) => (
-  <Card key={campaign.id} className="overflow-hidden hover:shadow-md transition-all duration-300 mb-4">
-    <div className="flex p-4">
-      {/* Left - Image */}
-      <div className="w-64 h-48 relative flex-shrink-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
-        <Image
-          src={campaign.brand === 'JoyRide Candy Co.' ? '/joy.jpeg' : '/logo.png'}
-          alt={campaign.name}
-          width={200}
-          height={160}
-          className="object-contain absolute inset-0 m-auto"
-        />
-      </div>
+              <CardContent className="p-6">
+                {(dataMode === "demo" ? rewardsCampaigns : rewardsCampaignsLive).length > 0 ? (
+                  <div className="space-y-6">
+                    {(dataMode === "demo" ? rewardsCampaigns : rewardsCampaignsLive).map((campaign) => (
+                      <motion.div
+                        key={campaign.id}
+                        whileHover={{ y: -5 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        on={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="group"
+                      >
+                        <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 group-hover:border-blue-200">
+                          <div className="flex flex-col sm:flex-row p-0">
+                            {/* Left - Image */}
+                            <div className="w-full sm:w-64 h-48 relative flex-shrink-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none overflow-hidden">
+                              <div className="absolute inset-0 bg-black/10 z-10"></div>
+                              <Image
+                                src={
+                                  campaign.brand === "JoyRide Candy Co."
+                                    ? "/joy.jpeg"
+                                    : campaign.brand === "Prime Hydration"
+                                      ? "/prof.jpeg"
+                                      : "/logo.png"
+                                }
+                                alt={campaign.name}
+                                width={200}
+                                height={160}
+                                className="object-contain absolute inset-0 m-auto z-20"
+                              />
+                              <div className="absolute bottom-3 left-3 z-30">
+                                <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm shadow-md px-3 py-1.5 rounded-full">
+                                  <div className="relative w-5 h-5 rounded-full overflow-hidden">
+                                    <Image
+                                      src={
+                                        campaign.brand === "JoyRide Candy Co."
+                                          ? "/joy.jpeg"
+                                          : campaign.brand === "Prime Hydration"
+                                            ? "/prof.jpeg"
+                                            : "/logo.png"
+                                      }
+                                      alt={campaign.brand}
+                                      fill
+                                      className="object-cover"
+                                      sizes="20px"
+                                    />
+                                  </div>
+                                  <span className="text-xs font-medium text-gray-800">{campaign.brand}</span>
+                                </div>
+                              </div>
+                            </div>
 
-      {/* Right - Details */}
-      <div className="ml-6 flex-1 relative">
-        {/* View Details Button - Top Right */}
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="absolute top-0 right-0 text-xs h-8"
-          onClick={() => handleCampaignClick(campaign)}
-        >
-          View Details
-        </Button>
+                            {/* Right - Details */}
+                            <div className="p-5 sm:p-6 flex-1 relative">
+                              {/* View Details Button - Top Right */}
+                              <Button
+                                size="sm"
+                                className="absolute top-4 right-4 text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all rounded-full px-4"
+                                onClick={() => handleCampaignClick(campaign)}
+                              >
+                                View Details
+                              </Button>
 
-        {/* Brand Badge */}
-        <div className="flex items-center gap-2 w-fit bg-white shadow-sm px-2 py-1 rounded-full border border-gray-100 mb-2">
-          <div className="relative w-4 h-4 rounded-full overflow-hidden">
-            <Image
-              src={campaign.brand === 'JoyRide Candy Co.' ? '/joy.jpeg' : '/logo.png'}
-              alt={campaign.brand}
-              fill
-              className="object-cover"
-              sizes="16px"
-            />
-          </div>
-          <span className="text-xs font-medium">{campaign.brand}</span>
-        </div>
-        
-        {/* Campaign Name and Prize */}
-        <h3 className="font-bold text-lg mb-1">{campaign.name}</h3>
-        <p className="text-sm text-gray-600 mb-3">{campaign.prize}</p>
+                              {/* Campaign Name and Prize */}
+                              <h3 className="font-bold text-xl mb-2 pr-28">{campaign.name}</h3>
+                              <p className="text-sm text-gray-600 mb-4">{campaign.prize}</p>
 
-        {/* Progress Section */}
-        <div className="max-w-md">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs font-medium">{campaign.uploadedReceipts} of {campaign.totalRequired} collected</span>
-            <span className="text-xs font-medium text-amber-600">
-              {Math.round((campaign.uploadedReceipts/campaign.totalRequired) * 100)}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
-            <div 
-              className="bg-gradient-to-r from-yellow-500 to-amber-500 h-1.5 rounded-full" 
-              style={{ width: `${(campaign.uploadedReceipts/campaign.totalRequired) * 100}%` }}
-            ></div>
-          </div>
-        </div>
+                              {/* Progress Section */}
+                              <div className="max-w-md">
+                                <div className="flex justify-between mb-2">
+                                  <span className="text-sm font-medium">
+                                    {campaign.uploadedReceipts} of {campaign.totalRequired} collected
+                                  </span>
+                                  <span className="text-sm font-medium text-blue-600">
+                                    {Math.round((campaign.uploadedReceipts / campaign.totalRequired) * 100)}%
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600 relative"
+                                    style={{ width: `${(campaign.uploadedReceipts / campaign.totalRequired) * 100}%` }}
+                                  >
+                                    <div className="absolute inset-0 bg-white/20 overflow-hidden flex">
+                                      <div className="w-2 h-full bg-white/40 skew-x-[20deg] animate-[shimmer_2s_infinite]"></div>
+                                    </div>
+                                  </div>
+                                </div>
 
-        {/* End Date */}
-        <div className="flex items-center gap-1 text-xs text-gray-500 mt-4">
-          <Clock className="h-3.5 w-3.5" />
-          <span>Ends {campaign.endDate}</span>
-        </div>
-      </div>
-    </div>
-  </Card>
-  ))
-) : (
-  <div className="text-center py-8">
-    <div className="bg-gray-100 inline-flex p-4 rounded-full mb-4">
-      <Gift className="w-6 h-6 text-gray-400" />
-    </div>
-    <h3 className="text-gray-700 font-medium mb-1">No active reward campaigns</h3>
-    <p className="text-sm text-gray-500 mb-4">Join brand campaigns to start earning rewards</p>
-    <Button onClick={() => setActiveTab('brands')}>Find Campaigns</Button>
-  </div>
-)}
-</CardContent>
-<CardContent>
-{rewardsCampaigns.map((campaign) => (
-  <Card key={campaign.id} className="overflow-hidden hover:shadow-md transition-all duration-300 mb-4">
-    <div className="flex p-4">
-      {/* Left - Image */}
-      <div className="w-64 h-48 relative flex-shrink-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
-        <Image
-          src={campaign.brand === 'JoyRide Candy Co.' ? '/joy.jpeg' : '/logo.png'}
-          alt={campaign.name}
-          width={200}
-          height={160}
-          className="object-contain absolute inset-0 m-auto"
-        />
-      </div>
-
-      {/* Right - Details */}
-      <div className="ml-6 flex-1 relative">
-        {/* View Details Button - Top Right */}
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="absolute top-0 right-0 text-xs h-8"
-          onClick={() => handleCampaignClick(campaign)}
-        >
-          View Details
-        </Button>
-
-        {/* Brand Badge */}
-        <div className="flex items-center gap-2 w-fit bg-white shadow-sm px-2 py-1 rounded-full border border-gray-100 mb-2">
-          <div className="relative w-4 h-4 rounded-full overflow-hidden">
-            <Image
-              src={campaign.brand === 'JoyRide Candy Co.' ? '/joy.jpeg' : '/logo.png'}
-              alt={campaign.brand}
-              fill
-              className="object-cover"
-              sizes="16px"
-            />
-          </div>
-          <span className="text-xs font-medium">{campaign.brand}</span>
-        </div>
-        
-        {/* Campaign Name and Prize */}
-        <h3 className="font-bold text-lg mb-1">{campaign.name}</h3>
-        <p className="text-sm text-gray-600 mb-3">{campaign.prize}</p>
-
-        {/* Progress Section */}
-        <div className="max-w-md">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs font-medium">{campaign.uploadedReceipts} of {campaign.totalRequired} collected</span>
-            <span className="text-xs font-medium text-amber-600">
-              {Math.round((campaign.uploadedReceipts/campaign.totalRequired) * 100)}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
-            <div 
-              className="bg-gradient-to-r from-yellow-500 to-amber-500 h-1.5 rounded-full" 
-              style={{ width: `${(campaign.uploadedReceipts/campaign.totalRequired) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* End Date */}
-        <div className="flex items-center gap-1 text-xs text-gray-500 mt-4">
-          <Clock className="h-3.5 w-3.5" />
-          <span>Ends {campaign.endDate}</span>
-        </div>
-      </div>
-    </div>
-  </Card>
-))}
-</CardContent>
+                                {/* End Date */}
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-4">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  <span>Ends {campaign.endDate}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 px-4">
+                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 inline-flex p-4 rounded-full mb-6 shadow-lg">
+                      <Gift className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">No active reward campaigns</h3>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                      Join brand campaigns to start earning rewards and exclusive offers
+                    </p>
+                    <Button
+                      onClick={() => setActiveTab("brands")}
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-8 py-6 shadow-lg hover:shadow-xl transition-all"
+                    >
+                      Discover Campaigns
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
             </Card>
 
             {/* Campaign Details Dialog */}
             <Dialog open={showCampaignDialog} onOpenChange={setShowCampaignDialog}>
               <DialogContent className="w-[95vw] max-w-[1000px] p-2 rounded-xl">
                 {selectedCampaign && (
-                  <ScrollArea className="bg-white w-full h-[78vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] rounded-md">
+                  <ScrollArea className="bg-white w-full h-[80vh] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] rounded-md">
                     <div className="p-4">
                       <div className="w-full">
-                        {/* Add brand header */}
-                        <div className="mb-6 flex items-center justify-center space-x-4">
-                          <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-50">
-                            <Image
-                              src={selectedCampaign.brand === 'JoyRide Candy Co.' ? '/joy.jpeg' : '/logo.png'}
-                              alt={selectedCampaign.brand}
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="text-center">
-                            <h2 className="text-xl font-bold text-gray-900">{selectedCampaign.brand}</h2>
+                        {/* Add brand header with toggle buttons */}
+                        <div className="mb-6 flex items-center justify-center">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-600 p-0.5">
+                              <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                                <Image
+                                  src={
+                                    selectedCampaign.brand === "JoyRide Candy Co."
+                                      ? "/"
+                                      : selectedCampaign.brand === "Prime Hydration"
+                                        ? "/"
+                                        : "/"
+                                  }
+                                  alt={selectedCampaign.brand}
+                                  width={64}
+                                  height={64}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-900">{selectedCampaign.brand}</h2>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="flex w-full">
-                          <div className="space-y-8 w-3/6">
+
+                        <div className="flex flex-col md:flex-row w-full gap-6">
+                          <div className="space-y-8 w-full md:w-3/6">
                             {/* Purchase Journey */}
-                            <Card className="bg-white p-4 flex flex-col">
+                            <Card className="bg-white p-4 flex flex-col shadow-md border-0">
                               <div className="mb-3 flex items-center justify-between w-full">
                                 <div>
                                   <h3 className="text-sm font-semibold text-gray-900">Purchase Journey</h3>
                                   <p className="text-xs text-gray-500">Path to {selectedCampaign.prize}</p>
                                 </div>
-                                <Gift className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                                <div className="bg-blue-100 p-2 rounded-lg">
+                                  <Gift className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                                </div>
                               </div>
-                              
+
                               <div className="relative">
-                                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-emerald-100" />
-                                {selectedCampaign.purchaseHistory?.map((purchase, i) => (
+                                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-blue-100" />
+                                {selectedCampaign.purchaseHistory?.map((purchase: any, i: number) => (
                                   <div key={i} className="relative flex items-start mb-4 last:mb-0">
-                                    <div className="absolute left-4 top-2.5 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-emerald-600 ring-4 ring-white" />
-                                    <div className="ml-8">
+                                    <div className="absolute left-4 top-2.5 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-white" />
+                                    <div className="ml-8 flex-1">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium text-gray-900">
-                                          {purchase.product}
-                                        </span>
-                                        <span className="text-sm font-medium text-emerald-600">
+                                        <span className="text-sm font-medium text-gray-900">{purchase.product}</span>
+                                        <span className="text-sm font-medium text-blue-600 ml-2">
                                           {purchase.amount}
                                         </span>
                                       </div>
-                                      <p className="mt-1 text-xs text-gray-500">{purchase.date}</p>
+                                      <div className="flex justify-between items-center">
+                                        <p className="mt-1 text-xs text-gray-500">{purchase.date}</p>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
@@ -579,24 +477,24 @@ export default function HomePage() {
                             </Card>
 
                             {/* Stamps Progress */}
-                            <div>
-                              <div className="flex items-center justify-between mb-3">
+                            <div className="bg-white p-5 rounded-xl shadow-md">
+                              <div className="flex items-center justify-between mb-4">
                                 <h4 className="font-medium">Stamps Progress</h4>
-                                <div className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full">
+                                <div className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-medium">
                                   {selectedCampaign.uploadedReceipts}/{selectedCampaign.totalRequired} Stamps
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <div className="grid grid-cols-6 gap-1">
+                                <div className="grid grid-cols-6 gap-2">
                                   {Array.from({ length: selectedCampaign.totalRequired }).map((_, i) => (
                                     <div key={i} className="aspect-square relative">
                                       {i < selectedCampaign.uploadedReceipts ? (
-                                        <div className="w-full h-full bg-yellow-500 rounded flex items-center justify-center shadow-sm">
-                                          <span className="text-white text-[10px] font-bold">✓</span>
+                                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                                          <Check className="text-white w-5 h-5" />
                                         </div>
                                       ) : (
-                                        <div className="w-full h-full rounded border border-dashed border-yellow-200 flex items-center justify-center hover:bg-yellow-50 transition-colors">
-                                          <span className="text-yellow-200 text-[8px]">{i + 1}</span>
+                                        <div className="w-full h-full rounded-lg border-2 border-dashed border-blue-200 flex items-center justify-center hover:bg-blue-50 transition-colors">
+                                          <span className="text-blue-300 text-xs font-medium">{i + 1}</span>
                                         </div>
                                       )}
                                     </div>
@@ -606,20 +504,24 @@ export default function HomePage() {
                             </div>
                           </div>
 
-                          <div className="space-y-6 w-3/6 ml-8">
+                          <div className="space-y-6 w-full md:w-3/6">
                             {/* Recent Receipts */}
                             <div className="mt-0">
+                              <h4 className="font-medium mb-3">Recent Receipts</h4>
                               <ScrollArea className="h-[290px] pr-4">
                                 <div className="space-y-4">
-                                  {selectedCampaign.receipts?.map((receipt, index) => (
-                                    <Card key={index}>
+                                  {selectedCampaign.receipts?.map((receipt: any, index: number) => (
+                                    <Card key={index} className="border-0 shadow-md hover:shadow-lg transition-all">
                                       <CardContent className="p-4">
                                         <div className="flex items-center justify-between">
                                           <div>
                                             <p className="font-medium">Receipt #{receipt.id}</p>
-                                            <p className="text-xs text-gray-400">{receipt.date}</p>
+                                            <div className="flex items-center justify-between">
+                                              <p className="text-xs text-gray-400">{receipt.date}</p>
+                                            </div>
+                                            <p className="text-xs text-gray-500">{receipt.store}</p>
                                           </div>
-                                          <Button variant="outline" size="sm">
+                                          <Button variant="outline" size="sm" className="rounded-full">
                                             <Eye className="h-4 w-4 mr-2" />
                                             View Receipt
                                           </Button>
@@ -634,19 +536,21 @@ export default function HomePage() {
 
                             {/* Upload Receipt Button */}
                             <div className="mt-6 w-full flex justify-center">
-                              <label className="w-2/3 border-2 border-dashed border-emerald-300 rounded-3xl p-6 cursor-pointer hover:bg-emerald-50 transition-colors flex flex-col items-center justify-center">
-                                <Upload className="w-6 h-6 text-emerald-500 mb-2" />
-                                <span className="text-sm font-medium text-emerald-600">Upload New Receipt</span>
+                              <label className="w-full border-2 border-dashed border-blue-300 rounded-2xl p-6 cursor-pointer hover:bg-blue-50 transition-colors flex flex-col items-center justify-center">
+                                <div className="bg-blue-100 p-3 rounded-full mb-3">
+                                  <Upload className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <span className="text-sm font-medium text-blue-600">Upload New Receipt</span>
                                 <span className="text-xs text-gray-500 mt-1">Click or drag receipt image here</span>
                                 <input
                                   type="file"
                                   accept="image/*"
                                   className="hidden"
                                   onChange={(e) => {
-                                    const file = e.target.files?.[0];
+                                    const file = e.target.files?.[0]
                                     if (file) {
                                       // Handle the file upload here
-                                      console.log('Receipt file:', file);
+                                      console.log("Receipt file:", file)
                                     }
                                   }}
                                 />
@@ -662,24 +566,21 @@ export default function HomePage() {
               </DialogContent>
             </Dialog>
           </>
-        );
-      
-      case 'polls':
+        )
+
+      // Replace the polls section in the renderTabContent function with this enhanced version
+      case "polls":
         return (
           <>
             {/* Welcome Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 flex justify-between items-center">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome, {userName || 'User'}!</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Welcome, {userName || "User"}!</h1>
                 <p className="text-gray-600 mt-1">Track your rewards campaigns and poll participation.</p>
               </div>
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm relative">
                 {profileImage ? (
-                  <img 
-                    src={profileImage} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={profileImage || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-blue-50">
                     <User className="w-8 h-8 text-blue-300" />
@@ -689,65 +590,107 @@ export default function HomePage() {
             </div>
 
             {/* Polls Section */}
-            <Card className="mb-6">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <Card className="mb-6 overflow-hidden border-0 shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20">
                 <div className="flex items-center space-x-2">
-                  <MessageSquare className="w-6 h-6 text-emerald-600" />
-                  <CardTitle className="text-xl font-bold">Polls Participation</CardTitle>
+                  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-lg shadow-md">
+                    <MessageSquare className="w-6 h-6 text-white" />
+                  </div>
+                  <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600">
+                    Polls Participation
+                  </CardTitle>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-full hover:bg-emerald-50 transition-all group"
-                  onClick={() => setActiveTab('dashboard')}
+                  className="rounded-full hover:bg-emerald-100 transition-all group"
+                  onClick={() => {
+                    setActiveTab("dashboard")
+                    window.scrollTo(0, 0)
+                  }}
                 >
                   <ChevronRight className="mr-1 w-5 h-5 text-emerald-600 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
                   Back
                 </Button>
               </CardHeader>
-              <CardContent>
-                {pollsParticipation.length > 0 ? (
+              <CardContent className="p-6">
+                {(dataMode === "demo" ? pollsParticipation : pollsParticipationLive).length > 0 ? (
                   <div className="space-y-4">
-                    {pollsParticipation.map((poll) => (
-                      <div 
-                        key={poll.id} 
-                        className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 flex justify-between items-center"
+                    {(dataMode === "demo" ? pollsParticipation : pollsParticipationLive).map((poll) => (
+                      <motion.div
+                        key={poll.id}
+                        whileHover={{ y: -5 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="group"
                       >
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{poll.title}</h3>
-                          <p className="text-sm text-gray-600">{poll.brand}</p>
-                          <div className="flex items-center mt-1 text-sm text-gray-500">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {poll.date}
+                        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-4 flex justify-between items-center group-hover:border-emerald-200">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 p-0.5 flex-shrink-0">
+                              <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                                <Image
+                                  src={poll.logo || poll.image || "/placeholder.svg?height=48&width=48"}
+                                  alt={poll.brand}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{poll.title}</h3>
+                              <p className="text-sm text-gray-600">{poll.brand}</p>
+                              <div className="flex items-center mt-1 text-xs text-gray-500">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {poll.date}
+                                {poll.reward && (
+                                  <span className="ml-3 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                                    {poll.reward}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center">
+                            <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center mr-3">
+                              <Check className="w-3 h-3 mr-1" />
+                              Completed
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-full hover:bg-emerald-50 transition-all"
+                            >
+                              <ChevronRight className="w-5 h-5 text-emerald-600" />
+                            </Button>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center">
-                          <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center mr-3">
-                            <Check className="w-3 h-3 mr-1" />
-                            Completed
-                          </div>
-                          <ChevronRight className="w-5 h-5 text-gray-400" />
-                        </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <div className="bg-gray-100 inline-flex p-4 rounded-full mb-4">
-                      <MessageSquare className="w-6 h-6 text-gray-400" />
+                  <div className="text-center py-12 px-4">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-600 inline-flex p-4 rounded-full mb-6 shadow-lg">
+                      <MessageSquare className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-gray-700 font-medium mb-1">No polls participation yet</h3>
-                    <p className="text-sm text-gray-500 mb-4">Participate in brand polls to share your opinion</p>
-                    <Button onClick={() => setActiveTab('brands')}>Find Polls</Button>
+                    <h3 className="text-xl font-bold mb-2">No polls participation yet</h3>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                      Participate in brand polls to share your opinion and earn rewards
+                    </p>
+                    <Button
+                      onClick={() => setActiveTab("brands")}
+                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-full px-8 py-6 shadow-lg hover:shadow-xl transition-all"
+                    >
+                      Find Polls
+                    </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
           </>
-        );
+        )
 
-      case 'brands':
+      case "brands":
         return (
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -756,28 +699,29 @@ export default function HomePage() {
             </div>
 
             {/* Categories Section */}
-            <div className="w-full">
-              <ScrollArea className="w-full whitespace-nowrap">
+            <div className="w-full bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+              <ScrollArea className="w-full whitespace-nowrap pb-2">
                 <div className="flex space-x-4 p-1">
-                  {['Prelims', 'Beverage', 'Coffee', 'Candy', 'Personal Care', 'Alcohol', 'Supplements'].map((category) => (
-                    <motion.div
-                               key={category}
-                               className="flex-none first:ml-0"
-                               whileTap={{ scale: 0.95 }}
-                             >
-                               <Button 
-                                 variant={category === selectedCategory ? 'default' : 'outline'} 
-                                 className={`whitespace-nowrap rounded-full px-4 sm:px-5 text-sm sm:text-base h-9 sm:h-10 ${
-                                   category === selectedCategory 
-                                     ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
-                                     : 'hover:bg-gray-100 text-gray-800 border-gray-200'
-                                 } transition-all duration-200`}
-                                 onClick={() => setSelectedCategory(category)}
-                               >
-                                 {category}
-                               </Button>
-                             </motion.div>
-                  ))}
+                  {["Prelims", "Beverage", "Coffee", "Candy", "Personal Care", "Alcohol", "Supplements"].map(
+                    (category) => (
+                      <motion.div key={category} className="flex-none first:ml-0" whileTap={{ scale: 0.95 }}>
+                        <Button
+                          variant={category === selectedCategory ? "default" : "outline"}
+                          className={`whitespace-nowrap rounded-full px-4 sm:px-5 text-sm sm:text-base h-9 sm:h-10 ${
+                            category === selectedCategory
+                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
+                              : "hover:bg-gray-100 text-gray-800 border-gray-200"
+                          } transition-all duration-200`}
+                          onClick={() => {
+                            setSelectedCategory(category)
+                            setCurrentProductPage(0)
+                          }}
+                        >
+                          {category}
+                        </Button>
+                      </motion.div>
+                    ),
+                  )}
                 </div>
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
@@ -786,32 +730,35 @@ export default function HomePage() {
             {/* Product Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {productData
-                .filter(product => {
-                  if (selectedCategory === 'Prelims') return true;
-                  return product.category === selectedCategory;
+                .filter((product) => {
+                  if (selectedCategory === "Prelims") return true
+                  return product.category === selectedCategory
                 })
-                .slice(
-                  currentProductPage * 3,
-                  (currentProductPage + 1) * 3
-                )
+                .slice(currentProductPage * PRODUCTS_PER_PAGE, (currentProductPage + 1) * PRODUCTS_PER_PAGE)
                 .map((product) => (
-                  <div key={product.id} className="group w-full">
-                    <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full">
-                      <div className="bg-gradient-to-br from-gray-50 to-gray-100 h-48 flex items-center justify-center relative">
+                  <motion.div
+                    key={product.id}
+                    className="group w-full"
+                    whileHover={{ y: -8 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 h-full border border-gray-100 group-hover:border-blue-200">
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100 h-48 flex items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <Image
-                          src={product.imageSrc}
+                          src={product.imageSrc || "/placeholder.svg"}
                           alt={product.name}
                           width={160}
                           height={160}
-                          className="object-contain cursor-pointer group-hover:scale-110 transition-transform duration-300"
+                          className="object-contain cursor-pointer group-hover:scale-110 transition-transform duration-300 z-10"
                         />
                         {product.influencer && (
                           <button
                             onClick={() => handleInfluencerClick(product.influencer)}
-                            className="absolute bottom-3 right-3 w-12 h-12 rounded-full border-2 border-white overflow-hidden transition-transform duration-300 hover:scale-110 shadow-md"
+                            className="absolute bottom-3 right-3 w-12 h-12 rounded-full border-2 border-white overflow-hidden transition-transform duration-300 hover:scale-110 shadow-md z-20"
                           >
                             <Image
-                              src={product.influencer.image}
+                              src={product.influencer.image || "/placeholder.svg"}
                               alt={product.influencer.name}
                               width={48}
                               height={48}
@@ -820,27 +767,30 @@ export default function HomePage() {
                           </button>
                         )}
                       </div>
-                      <div className="p-4">
+                      <div className="p-5">
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-bold text-lg">{product.brand}</h3>
                             <p className="text-gray-600 text-sm">{product.category}</p>
                           </div>
-                          <div className="flex items-center">
-      <span className="text-lg font-bold">{product.price}</span>
-      <span className="text-sm text-gray-500 ml-1">
-        {product.brand === "ItsCalledW" ? "/stick" : 
-         product.brand === "Ketone-IQ" ? "/serving" :
-         product.category === "Beverage" ? "/pack" : "/bag"}
-      </span>
-    </div>
+                          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full">
+                            <span className="text-lg font-bold text-blue-700">{product.price}</span>
+                            <span className="text-xs text-blue-600 ml-1">
+                              {product.brand === "ItsCalledW"
+                                ? "/stick"
+                                : product.brand === "Ketone-IQ"
+                                  ? "/serving"
+                                  : product.category === "Beverage"
+                                    ? "/pack"
+                                    : "/bag"}
+                            </span>
+                          </div>
                         </div>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full mt-4 rounded-full"
+                            <Button
+                              size="sm"
+                              className="w-full mt-4 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all"
                             >
                               View Details
                             </Button>
@@ -877,7 +827,7 @@ export default function HomePage() {
                                         <span className="text-xs font-medium text-green-700">Live</span>
                                       </button>
                                       <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 pl-2">
-                                        <h4 className="text-lg font-semibold">{product.category}</h4>                          
+                                        <h4 className="text-lg font-semibold">{product.category}</h4>
                                         <span className="mt-1 sm:mt-0 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                                           {product.price}
                                         </span>
@@ -885,22 +835,25 @@ export default function HomePage() {
                                     </div>
 
                                     <div className="p-2 mt-2 relative min-h-44">
-                                      <button 
+                                      <button
                                         className="absolute -left-1 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white shadow-xl hover:bg-gray-50 transition-all border border-gray-100 hidden sm:flex items-center justify-center hover:scale-110"
                                         onClick={() => {
-                                          const container = document.getElementById(`product-carousel-${product.id}`);
-                                          if (container) container.scrollLeft -= container.offsetWidth / 2;
+                                          const container = document.getElementById(`product-carousel-${product.id}`)
+                                          if (container) container.scrollLeft -= container.offsetWidth / 2
                                         }}
                                       >
                                         <ChevronRight className="w-5 h-5 text-gray-700 rotate-180" />
                                       </button>
 
-                                      <div 
+                                      <div
                                         id={`product-carousel-${product.id}`}
                                         className="flex overflow-x-auto sm:overflow-x-hidden scroll-smooth px-0 sm:px-0 gap-3 sm:gap-6 snap-x snap-mandatory sm:snap-none pb-4 sm:pb-0 -mx-2 sm:mx-0"
                                       >
                                         {product.similarProducts?.map((item: any) => (
-                                          <div key={item.id} className="flex-none w-[80%] sm:w-1/3 snap-center first:ml-2 sm:first:ml-0">
+                                          <div
+                                            key={item.id}
+                                            className="flex-none w-[80%] sm:w-1/3 snap-center first:ml-2 sm:first:ml-0"
+                                          >
                                             <div className="border border-gray-100 rounded-xl p-3 hover:border-blue-200 transition-colors group/card">
                                               <div className="relative aspect-square rounded-lg overflow-hidden cursor-pointer">
                                                 <div className="absolute inset-0 duration-300 z-10"></div>
@@ -914,7 +867,7 @@ export default function HomePage() {
                                                 </Button>
                                                 <div className="w-full h-full flex items-center justify-center">
                                                   <Image
-                                                    src={item.imageUrl}
+                                                    src={item.imageUrl || "/placeholder.svg"}
                                                     alt={item.name}
                                                     width={200}
                                                     height={200}
@@ -935,11 +888,11 @@ export default function HomePage() {
                                         ))}
                                       </div>
 
-                                      <button 
+                                      <button
                                         className="absolute -right-1 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white shadow-xl hover:bg-gray-50 transition-all border border-gray-100 hidden sm:flex items-center justify-center hover:scale-110"
                                         onClick={() => {
-                                          const container = document.getElementById(`product-carousel-${product.id}`);
-                                          if (container) container.scrollLeft += container.offsetWidth / 2;
+                                          const container = document.getElementById(`product-carousel-${product.id}`)
+                                          if (container) container.scrollLeft += container.offsetWidth / 2
                                         }}
                                       >
                                         <ChevronRight className="w-5 h-5 text-gray-700" />
@@ -953,44 +906,49 @@ export default function HomePage() {
                         </Dialog>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
             </div>
 
             {/* Pagination */}
-            {Math.ceil(productData.filter(product => {
-              if (selectedCategory === 'Prelims') return true;
-              return product.category === selectedCategory;
-            }).length / 3) > 1 && (
-              <div className="flex justify-center mt-8 space-x-1">
+            {Math.ceil(
+              productData.filter((product) => {
+                if (selectedCategory === "Prelims") return true
+                return product.category === selectedCategory
+              }).length / PRODUCTS_PER_PAGE,
+            ) > 1 && (
+              <div className="flex justify-center mt-8 space-x-2">
                 {Array.from({
                   length: Math.ceil(
-                    productData.filter(product => {
-                      if (selectedCategory === 'Prelims') return true;
-                      return product.category === selectedCategory;
-                    }).length / 3
-                  )
+                    productData.filter((product) => {
+                      if (selectedCategory === "Prelims") return true
+                      return product.category === selectedCategory
+                    }).length / PRODUCTS_PER_PAGE,
+                  ),
                 }).map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentProductPage(idx)}
                     className={`w-2 h-2 rounded-full transition-all ${
-                      idx === currentProductPage ? 'bg-blue-600 w-4' : 'bg-gray-300 hover:bg-blue-400'
+                      idx === currentProductPage
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 w-8"
+                        : "bg-gray-300 hover:bg-blue-400"
                     }`}
                   />
                 ))}
               </div>
             )}
           </div>
-        );
-      case 'settings':
+        )
+
+      case "settings":
         return (
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
               <p className="text-gray-600 mt-1">Manage your profile and preferences.</p>
             </div>
-            
+
             <Card className="shadow-md">
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -999,21 +957,17 @@ export default function HomePage() {
                       <Label>Email</Label>
                       <div className="relative mt-1">
                         <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                        <Input 
-                          value={userEmail}
-                          disabled
-                          className="pl-10 rounded-[12px] bg-gray-50 py-6" 
-                        />
+                        <Input value={userEmail} disabled className="pl-10 rounded-[12px] bg-gray-50 py-6" />
                       </div>
                     </div>
                     <div>
                       <Label>Full Name</Label>
                       <div className="relative mt-1">
                         <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                        <Input 
+                        <Input
                           value={userName}
                           onChange={(e) => setUserName(e.target.value)}
-                          className="pl-10 rounded-[12px] py-6" 
+                          className="pl-10 rounded-[12px] py-6"
                         />
                       </div>
                     </div>
@@ -1021,8 +975,8 @@ export default function HomePage() {
                       <Label>Address</Label>
                       <div className="relative mt-1">
                         <HomeIcon className="absolute left-3 top-2 h-5 w-5 text-gray-400" />
-                        <Textarea 
-                          value={userAddress} 
+                        <Textarea
+                          value={userAddress}
                           onChange={(e) => setUserAddress(e.target.value)}
                           className="w-full resize-none rounded-[12px] pl-10"
                           rows={3}
@@ -1033,46 +987,43 @@ export default function HomePage() {
                       <Label>Location</Label>
                       <div className="relative mt-1">
                         <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                        <Input 
-                          value={userLocation} 
+                        <Input
+                          value={userLocation}
                           onChange={(e) => setUserLocation(e.target.value)}
                           placeholder="City, State"
                           className="pl-10 rounded-[12px] py-6"
                         />
                       </div>
                     </div>
-                    <Button 
-                      className="w-full mt-4 bg-blue-600 rounded-2xl"
-                      onClick={handleUpdateProfile}
-                    >
+                    <Button className="w-full mt-4 bg-blue-600 rounded-2xl" onClick={handleUpdateProfile}>
                       Save Changes
                     </Button>
                   </div>
-                  
+
                   <div className="flex flex-col items-center justify-start space-y-6">
                     <div className="relative group">
                       <Avatar className="w-32 h-32 border-4 border-white shadow-md">
-                        <AvatarImage src={profileImage || ''} alt="Profile" />
+                        <AvatarImage src={profileImage || ""} alt="Profile" />
                         <AvatarFallback>
                           <User className="w-16 h-16 text-blue-300" />
                         </AvatarFallback>
                       </Avatar>
-                      
+
                       <label className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-md cursor-pointer transition-colors">
                         <Upload className="w-5 h-5" />
-                        <input 
-                          type="file" 
-                          className="hidden" 
+                        <input
+                          type="file"
+                          className="hidden"
                           accept="image/*"
                           onChange={handleProfileImageUpload}
                           disabled={uploadingImage}
                         />
                       </label>
                     </div>
-                    
+
                     <div className="text-center mb-6">
                       <p className="text-sm text-gray-500">
-                        {uploadingImage ? 'Uploading...' : 'Upload a profile picture'}
+                        {uploadingImage ? "Uploading..." : "Upload a profile picture"}
                       </p>
                     </div>
 
@@ -1082,8 +1033,8 @@ export default function HomePage() {
                         <Label>Age</Label>
                         <div className="relative mt-1">
                           <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             value={age}
                             onChange={(e) => setAge(e.target.value)}
                             className="pl-10 rounded-[12px]"
@@ -1096,27 +1047,19 @@ export default function HomePage() {
                         <div className="relative mt-1">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 className="w-full rounded-[12px] py-6 flex justify-between items-center pl-10 relative"
                               >
                                 <Users className="absolute left-3 h-5 w-5 text-gray-400" />
-                                <span className="text-left flex-1">
-                                  {gender || "Select gender"}
-                                </span>
+                                <span className="text-left flex-1">{gender || "Select gender"}</span>
                                 <ChevronRight className="h-5 w-5 text-gray-400 rotate-90" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-[200px]">
-                              <DropdownMenuItem onClick={() => setGender("male")}>
-                                Male
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setGender("female")}>
-                                Female
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setGender("other")}>
-                                Other
-                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setGender("male")}>Male</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setGender("female")}>Female</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setGender("other")}>Other</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -1127,39 +1070,70 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </div>
-        );
+        )
       default:
-        return null;
+        return null
     }
-  };
+  }
+
+  const renderHeader = () => (
+    <header className="w-full bg-white border-b border-gray-200 py-4 px-6 sticky top-0 z-30">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <div className="flex items-center gap-2">
+            <Avatar className="w-9 h-9">
+                  <AvatarImage src={LogoImage.src} alt="Logo" />
+                  <AvatarFallback>MA</AvatarFallback>
+                </Avatar>
+              <span className="text-xl font-semibold text-zinc-800">Mall AI</span>
+            </div>
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="bg-gray-100 p-1 rounded-full flex">
+            <Button
+              size="sm"
+              variant={dataMode === "demo" ? "default" : "ghost"}
+              className={`rounded-full px-3 text-xs h-7 ${dataMode === "demo" ? "bg-blue-600 text-white" : "text-gray-600"}`}
+              onClick={() => setDataMode("demo")}
+            >
+              Demo
+            </Button>
+            <Button
+              size="sm"
+              variant={dataMode === "live" ? "default" : "ghost"}
+              className={`rounded-full px-3 text-xs h-7 ${dataMode === "live" ? "bg-blue-600 text-white" : "text-gray-600"}`}
+              onClick={() => setDataMode("live")}
+            >
+              Live
+            </Button>
+          </div>
+
+          {user ? (
+            <Button onClick={handleSignOut} variant="outline" className="flex items-center gap-2 rounded-full">
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </Button>
+          ) : (
+            <Button
+              onClick={() => router.push("/login")}
+              className="flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <User className="w-4 h-4" />
+              <span>Login</span>
+            </Button>
+          )}
+        </div>
+      </div>
+    </header>
+  )
 
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="w-full bg-white border-b border-gray-200 py-4 px-6 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Link href="/">
-              <div className="flex items-center gap-2">
-                <Avatar className="w-9 h-9">
-                  <AvatarImage src={LogoImage.src} alt="Logo" />
-                  <AvatarFallback>MA</AvatarFallback>
-                </Avatar>
-                <span className="text-xl font-semibold text-zinc-800">Mall AI</span>
-              </div>
-            </Link>
-          </div>
-          
-          <Button 
-            onClick={handleSignOut}
-            variant="outline" 
-            className="flex items-center gap-2 rounded-full"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Logout</span>
-          </Button>
-        </div>
-      </header>
+      {renderHeader()}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1170,36 +1144,37 @@ export default function HomePage() {
               <nav className="p-4">
                 <ul className="space-y-2">
                   <li>
-                    <Button 
-                      variant={activeTab === 'dashboard' ? 'default' : 'ghost'} 
+                    <Button
+                      variant={activeTab === "dashboard" ? "default" : "ghost"}
                       className={`w-full justify-start rounded-2xl ${
-                        activeTab === 'dashboard' ? 'bg-blue-600 text-white hover:bg-blue-700' : ''
+                        activeTab === "dashboard" ? "bg-blue-600 text-white hover:bg-blue-700" : ""
                       }`}
-                      onClick={() => setActiveTab('dashboard')}
+                      onClick={() => setActiveTab("dashboard")}
                     >
                       <Home className="w-4 h-4 mr-3" />
                       Dashboard
                     </Button>
                   </li>
                   <li>
-                    <Button 
-                      variant={activeTab === 'brands' ? 'default' : 'ghost'} 
+                    <Button
+                      variant={activeTab === "brands" ? "default" : "ghost"}
                       className={`w-full justify-start rounded-2xl ${
-                        activeTab === 'brands' ? 'bg-blue-600 text-white hover:bg-blue-700' : ''
+                        activeTab === "brands" ? "bg-blue-600 text-white hover:bg-blue-700" : ""
                       }`}
-                      onClick={() => setActiveTab('brands')}
+                      onClick={() => setActiveTab("brands")}
                     >
                       <BarChart className="w-4 h-4 mr-3" />
                       Brands
                     </Button>
                   </li>
                   <li>
-                    <Button 
-                      variant={activeTab === 'settings' ? 'default' : 'ghost'} 
+                    <Button
+                      variant={activeTab === "settings" ? "default" : "ghost"}
                       className={`w-full justify-start rounded-2xl ${
-                        activeTab === 'settings' ? 'bg-blue-600 text-white hover:bg-blue-700' : ''
+                        activeTab === "settings" ? "bg-blue-600 text-white hover:bg-blue-700" : ""
                       }`}
-                      onClick={() => setActiveTab('settings')}
+                      onClick={() => setActiveTab("settings")}
+                      disabled={!user}
                     >
                       <Settings className="w-4 h-4 mr-3" />
                       Settings
@@ -1207,21 +1182,19 @@ export default function HomePage() {
                   </li>
                 </ul>
               </nav>
-              
+
               {/* Brands Subscribed Section */}
               <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center gap-2 mb-3">
                   <h3 className="font-medium text-sm">Brands Subscribed</h3>
                 </div>
                 <div className="space-y-3">
-                  {subscribedBrands.length > 0 ? (
-                    subscribedBrands.map((brand) => (
+                  {subscribedBrandsList.length > 0 ? (
+                    subscribedBrandsList.map((brand) => (
                       <div key={brand.id} className="flex items-center gap-3">
                         <Avatar className="w-10 h-10">
                           <AvatarImage src={brand.logo} alt={brand.name} />
-                          <AvatarFallback>
-                            {brand.name.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
+                          <AvatarFallback>{brand.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="overflow-hidden">
                           <p className="text-sm font-medium truncate">{brand.name}</p>
@@ -1232,6 +1205,16 @@ export default function HomePage() {
                   ) : (
                     <div className="text-center py-2">
                       <p className="text-xs text-gray-500">No brands subscribed yet</p>
+                      {!user && (
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="text-blue-600 p-0 h-auto mt-1"
+                          onClick={() => router.push("/login")}
+                        >
+                          Login to subscribe
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1240,9 +1223,7 @@ export default function HomePage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-9">
-            {renderTabContent()}
-          </div>
+          <div className="lg:col-span-9">{renderTabContent()}</div>
         </div>
       </div>
       <InfluencerDialog
@@ -1250,11 +1231,8 @@ export default function HomePage() {
         open={showInfluencerDialog}
         onOpenChange={setShowInfluencerDialog}
       />
-      <ProductDetailDialog
-        product={selectedProduct}
-        open={showProductDialog}
-        onOpenChange={setShowProductDialog}
-      />
+      <ProductDetailDialog product={selectedProduct} open={showProductDialog} onOpenChange={setShowProductDialog} />
     </div>
-  );
+  )
 }
+

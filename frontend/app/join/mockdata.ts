@@ -427,6 +427,126 @@ export const productData = [
   },
 ];
 
+export const rewardsCampaigns = [
+  {
+    id: 1,
+    brand: "JoyRide Candy Co.",
+    name: "Summer Sweepstakes",
+    uploadedReceipts: 4,
+    totalRequired: 6,
+    status: "active",
+    endDate: "2024-04-15",
+    purchaseHistory: [
+      { product: "Blue Raspberry Candy Strips", date: "2024-03-14", amount: "$12.99" },
+      { product: "Green Apple Candy Strips", date: "2024-03-10", amount: "$12.99" },
+      { product: "Sour Strawberry Strips", date: "2024-03-05", amount: "$12.99" },
+      { product: "Lemon Candy Strips", date: "2024-03-01", amount: "$12.99" },
+    ],
+    receipts: [
+      { id: 1, date: "2024-03-14", store: "Sweet Spot Central", amount: "$12.99" },
+      { id: 2, date: "2024-03-10", store: "Candy Corner", amount: "$12.99" },
+      { id: 3, date: "2024-03-05", store: "Mall Candy Shop", amount: "$12.99" },
+      { id: 4, date: "2024-03-01", store: "Sweet Treats", amount: "$12.99" },
+    ],
+    prize: "Win a Year Supply of JoyRide Candy",
+  },
+  {
+    id: 2,
+    brand: "Chamberlain Coffee",
+    name: "New Flavor Launch",
+    uploadedReceipts: 2,
+    totalRequired: 4,
+    status: "new",
+    endDate: "2024-04-30",
+    purchaseHistory: [
+      { product: "Matcha Green Tea Latte", date: "2024-03-12", amount: "$5.99" },
+      { product: "Vanilla Bean Cold Brew", date: "2024-03-08", amount: "$4.99" },
+    ],
+    receipts: [
+      { id: 1, date: "2024-03-12", store: "Chamberlain Cafe", amount: "$5.99" },
+      { id: 2, date: "2024-03-08", store: "Coffee Corner", amount: "$4.99" },
+    ],
+    prize: "Early Access to New Flavors",
+  },
+]
+
+export const pollsParticipation = [
+  {
+    id: 1,
+    brand: "JoyRide Candy Co.",
+    title: "New Flavor Preference",
+    date: "2023-07-10",
+    status: "completed",
+    reward: "10% Off Coupon",
+    questions: 5,
+    image: "/joy.jpeg",
+  },
+  {
+    id: 2,
+    brand: "Prime Hydration",
+    title: "Package Design Feedback",
+    date: "2023-07-05",
+    status: "completed",
+    reward: "Free Sample",
+    questions: 8,
+    image: "/prof.jpeg",
+  },
+  {
+    id: 3,
+    brand: "Chamberlain Coffee",
+    title: "Customer Experience Survey",
+    date: "2023-06-28",
+    status: "completed",
+    reward: "15% Off Next Order",
+    questions: 6,
+    image: "/logo.png",
+  },
+]
+
+export const RewardThen = [
+  {
+    id: "1",
+    name: "John Doe",
+    email: "john@example.com",
+    location: "New York",
+    joinDate: "2023-01-15",
+    purchaseHistory: [
+      { product: "Blue Raspberry Strips", date: "2024-03-14" },
+      { product: "Sour Apple Strips", date: "2024-03-10" },
+      { product: "Strawberry Strips", date: "2024-03-05" },
+    ],
+    stamps: [
+      { stamped: true },
+      { stamped: true },
+      { stamped: true },
+      { stamped: false },
+      { stamped: false },
+      { stamped: false },
+    ],
+  },
+]
+
+export const subscribedBrands = [
+  {
+    id: "1",
+    name: "JoyRide Candy Co.",
+    logo: "/joy.jpeg",
+    campaigns: 2,
+  },
+  {
+    id: "2",
+    name: "Prime Hydration",
+    logo: "/prof.jpeg",
+    campaigns: 1,
+  },
+  {
+    id: "3",
+    name: "Chamberlain Coffee",
+    logo: "/logo.png",
+    campaigns: 3,
+  },
+]
+
 // Product categories
 export const categories = [
   { id: 'all', name: 'All Products' },

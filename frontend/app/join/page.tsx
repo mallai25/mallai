@@ -502,9 +502,9 @@ export default function JoinPage() {
       {/* Discover Amazing Products Section */}
       <section className="py-16 bg-white mt-2 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative">
-        <div className="absolute -top-16 -left-20 w-64 h-64 bg-blue-300 rounded-full opacity-5 animate-pulse"></div>
-        <div className="absolute top-40 -right-20 w-64 h-64 bg-yellow-300 rounded-full opacity-5 animate-pulse" style={{ animationDelay: '3s' }}></div>
-        
+        <div className="hidden md:block absolute -top-16 -left-20 w-64 h-64 bg-blue-300 rounded-full opacity-5 animate-pulse"></div>
+        <div className="hidden md:block absolute top-40 -right-20 w-64 h-64 bg-yellow-300 rounded-full opacity-5 animate-pulse" style={{ animationDelay: '3s' }}></div>
+
           <div className="text-center w-full mx-auto mb-10 z-10">
             <h2 className="text-4xl md:text-5xl font-extrabold mb-5 text-gray-900">
               Discover Amazing Products

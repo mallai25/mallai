@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../../FirebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ArrowLeft, ChevronRight, Gift, User, Upload, Check, ArrowRight, Package, BarChart, QrCode, PodcastIcon } from 'lucide-react';
@@ -44,6 +44,9 @@ import JakeProfile from '../itscalledw/Images/Jake.jpg';
 import GeoffreyProfile from '../ketone/Images/ketoneback.jpg';
 import NinjaProfile from '../Nutcase/Images/Ninja.png';
 
+import { InfluencerDialog } from '../Components/InfluencerDialog';
+import { ProductDetailDialog } from '../Components/ProductDetailDialog';
+import { productData, influencers } from '../mockdata';
 
 export default function JoinPage() {
   const router = useRouter();
@@ -58,6 +61,11 @@ export default function JoinPage() {
   const [error, setError] = useState('');
 
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const [showInfluencerDialog, setShowInfluencerDialog] = useState(false);
+  const [selectedInfluencer, setSelectedInfluencer] = useState(null);
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +124,17 @@ export default function JoinPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleInfluencerClick = (influencer) => {
+    const matchingInfluencer = influencers.find(inf => inf.name === influencer.name);
+    setSelectedInfluencer(matchingInfluencer);
+    setShowInfluencerDialog(true);
+  };
+
+  const handleProductQRClick = (product) => {
+    setSelectedProduct(product);
+    setShowProductDialog(true);
   };
 
   return (
@@ -436,93 +455,7 @@ export default function JoinPage() {
           
           {/* Product Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                id: 1,
-                name: "ItsCalledW",
-                color: "yellow-500",
-                image: YellowW, 
-                description: 'Scent of lemon tree, crisp green apple, and fresh mint combined',
-                similarProducts: [
-                  { id: 1, name: 'W Original', description: 'Scent of lemon tree, crisp green apple, and fresh mint combined', imageUrl: YellowW },
-                  { id: 2, name: 'Wave Breaker', description: 'Tropical blend of coconut water, island vanilla beans and pacific ocean breeze', imageUrl: BlueW },
-                  { id: 3, name: 'Deep Woods', description: 'A crisp mountain breeze with notes of earthy richness and a hint of sandalwood', imageUrl: BlackW },
-                  { id: 4, name: 'Fresh Ice', description: 'The invigorating scent of cool coastal waters for a fresh, energizing experience', imageUrl: GrayW }
-                ],
-                    price: "$6.97",
-                    brand: "It's Called W",
-                    category: "Deodorant",
-                    weight: "12 fl oz (355 ml)",
-                    influencer: {
-                      name: "Jake Paul",
-                      image: JakeProfile
-                    }
-              },
-              {
-                id: 2,
-                name: "Ketone IQ",
-                color: "blue-500",
-                image: NoCaffeineKetone,
-                category: "Supplements",
-                description: 'One daily shot will help you feel clear, focused, and ready to take on any challenge',
-                price: "$4.50",
-    brand: "Ketone-IQ",
-    weight: "2 fl oz (59 ml)",
-                similarProducts: [
-                  { id: 1, name: 'No Caffeine Shot', description: 'One daily shot will help you feel clear, focused, and ready to take on any challenge', imageUrl: NoCaffeineKetone },
-                  { id: 1, name: 'Orgininal Shot', description: 'One daily shot will help you feel clear, focused, and ready to take on any challenge', imageUrl: NoCaffeineOriginal },
-                  { id: 2, name: 'Apple Caffeine Shot', description: 'Ideal for focused minds and active bodies, shots deliver a sugar-free boost', imageUrl: AppleKetone },
-                  { id: 3, name: 'Peach Caffeine Shot', description: 'Ideal for focused minds and active bodies, shots deliver a sugar-free boost', imageUrl: PeachKetone },
-                  { id: 4, name: 'Ketone Pouch', description: 'One shot will help you feel clear, focused, and ready to take on the day', imageUrl: PouchKetone },
-                  { id: 5, name: 'Ketone Multiserving', description: 'One daily shot will help you feel clear, focused, and ready to take on any challenge', imageUrl: BottleKetone }
-                ],
-                influencer: {
-                      name: "Geoffrey Woo",
-                      image: GeoffreyProfile
-                    },
-              },
-              {
-                id: 3,
-                name: "Drink Nutcase",
-                color: "green-500",
-                category: "Beverage",
-                description: 'If only chocolate milk could be both healthy and f*cking delicious… you’re welcome',
-                image: ChocoNutcase,
-                similarProducts: [
-                  { id: 1, name: 'Chocolate Cashew', description: 'If only chocolate milk could be both healthy and f*cking delicious… you’re welcome', imageUrl: ChocoNutcase },
-                  { id: 2, name: 'Vanilla Cashew', description: "Delicious combination of vanilla and cinnamon, it s a tasty treat that's DAIRY FREE", imageUrl: VanillaNutcase },
-                  { id: 3, name: 'Berry Cashew', description: 'A crisp mountain breeze with notes of earthy richness and a hint of sandalwood', imageUrl: BerryNutcase }
-                ],
-                price: "$39.99",
-                    brand: "NUTCASE",
-                    weight: "8 FL oz (236 ML)",
-                    influencer: {
-                      name: "Ninja",
-                      image: NinjaProfile
-                    }
-              },
-              {
-                id: 4,
-                name: "JoyRide Candy",
-                color: "purple-500",
-                category: "Candy",
-                image: JoyRed,
-                description: 'A punch of sour and a burst of berry flavor',
-                similarProducts: [
-                  { id: 1, name: 'Sour Strawberry Strips', description: 'A punch of sour and a burst of berry flavor', imageUrl: JoyRed },
-                  { id: 2, name: 'Blue Raspberry Strips', description: 'Sweet and tangy blue raspberry flavor with the perfect balance of sour', imageUrl: JoyBlue },
-                  { id: 3, name: 'Yellow Lemon Strips', description: "Zesty lemon flavor that'll make your taste buds dance", imageUrl: JoyYellow },
-                  { id: 4, name: 'Green Apple Strips', description: 'Crisp green apple flavor with a sour kick', imageUrl: JoyGreen }
-                ],
-                price: "$4.50",
-                    brand: "JoyRide Candy Co.",
-                    weight: "32g (1.13 oz)",
-                    influencer: {
-                      name: "Ryan Trahan",
-                      image: RyanProfile
-                    }
-              }
-            ].filter(product => {
+            {productData.filter(product => {
               if (selectedCategory === 'All') return true;
               return product.category.toLowerCase() === selectedCategory.toLowerCase();
             }).map((product) => (
@@ -533,7 +466,7 @@ export default function JoinPage() {
                               >
                   <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-48 flex items-center justify-center relative">
                   <Image
-                                    src={product.image}
+                                    src={product.imageSrc}
                                     alt={product.name}
                                     width={160}
                                     height={160}
@@ -545,7 +478,10 @@ export default function JoinPage() {
                                     <div>
                                       <h3 className="font-bold text-lg">{product.name}</h3>
                                     </div>
-                                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
+                                    <button 
+                                      onClick={() => handleInfluencerClick(product.influencer)}
+                                      className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 cursor-pointer hover:scale-110 transition-transform duration-200"
+                                    >
                                       <Image
                                         src={product.influencer.image}
                                         alt={product.influencer.name}
@@ -553,7 +489,7 @@ export default function JoinPage() {
                                         height={40}
                                         className="object-cover"
                                       />
-                                    </div>
+                                    </button>
                                   </div>
                                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
                                   <div className="flex justify-between items-center">
@@ -650,6 +586,7 @@ export default function JoinPage() {
                                                                                       variant="ghost"
                                                                                       size="sm"
                                                                                       className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-500 p-0 hover:shadow-lg shadow-md border-2 border-white transition-all group"
+                                                                                      onClick={() => handleProductQRClick(item)}
                                                                                     >
                                                                                       <QrCode className="h-4 w-4 text-white group-hover:scale-110 transition-transform" />
                                                                                     </Button>
@@ -702,6 +639,18 @@ export default function JoinPage() {
           </Button>
         </div>
       </section>
+
+      <InfluencerDialog
+        influencer={selectedInfluencer}
+        open={showInfluencerDialog}
+        onOpenChange={setShowInfluencerDialog}
+      />
+
+      <ProductDetailDialog
+        product={selectedProduct}
+        open={showProductDialog}
+        onOpenChange={setShowProductDialog}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { DiscoverProducts } from "./Components/DiscoverProducts";
+import { DiscoverProducts } from "../Components/DiscoverProducts";
 import Image from 'next/image';
 import { PodcastIcon, QrCode, BarChart, Gift, Package } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
