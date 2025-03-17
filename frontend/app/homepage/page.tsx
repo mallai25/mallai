@@ -297,7 +297,6 @@ export default function HomePage() {
                         key={campaign.id}
                         whileHover={{ y: -5 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        on={{ type: "spring", stiffness: 300, damping: 20 }}
                         className="group"
                       >
                         <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 group-hover:border-blue-200">
