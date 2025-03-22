@@ -789,31 +789,33 @@ export function ActivityTab() {
       </div>
 
       {activeSection === "products" && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-8">
+          {/* Campaigns Section */}
+          <div className="space-y-6">
             <Dialog>
               <DialogTrigger asChild>
-              <Card className="cursor-pointer hover:shadow-md transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-medium">Active Campaigns</CardTitle>
-                <Gift className="h-5 w-5 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-600">View current and set campaigns</p>
-                  <Button variant="outline" size="sm" className="ml-2 rounded-2xl">
-                  <Plus className="h-4 w-4 mr-1" />
-                  New
-                  </Button>
+              <div className="w-full flex justify-end">
+<Card className="cursor-pointer w-2/3 hover:shadow-md transition-all duration-300 max-w-md rounded-3xl">
+                  <CardHeader className="flex flex-row justify-between py-4">
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center">
+                     <p className="text-lg font-medium">Active Campaigns</p>
+                      <Button variant="outline" size="sm" className="ml-2 rounded-2xl">
+                        <Plus className="h-4 w-4 mr-1" />
+                        New
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
                 </div>
-                </CardContent>
-              </Card>
+                
               </DialogTrigger>
-                <DialogContent className="sm:max-w-[800px] h-[80vh] overflow-y-auto rounded-3xl">
-                  <DialogHeader>
-                  <DialogTitle>Create Campaign</DialogTitle>
-                  </DialogHeader>
-                  <Card className="p-4">
+              <DialogContent className="sm:max-w-[800px] h-[80vh] overflow-y-auto rounded-3xl">
+                <DialogHeader>
+                <DialogTitle>Create Campaign</DialogTitle>
+                </DialogHeader>
+                <Card className="p-4">
 <form onSubmit={handleAddCampaign}>
                     <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-4">
@@ -891,23 +893,107 @@ export function ActivityTab() {
 
             </Dialog>
 
+            <Card className="w-full pt-6 rounded-3xl">
+              <CardContent>
+                <ScrollArea className="w-full">
+                  <div 
+                    ref={campaignsRef}
+                    className="flex gap-4 pb-4"
+                  >
+                    {productListings.map((campaign, index) => (
+                      <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      >
+                        <div key={index} className="w-[300px] flex-none">
+                          <Card className="w-full p-3.5 rounded-3xl">
+                            <div className="relative w-full h-48 mb-3 rounded-2xl overflow-hidden group whitespace-nowrap">
+                              {campaign.image ? (
+                                <>
+                                  <Image 
+                                    src={campaign.image} 
+                                    alt={campaign.name} 
+                                    fill 
+                                    className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" 
+                                    unoptimized={typeof campaign.image === 'string'} 
+                                  /> 
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/20" />
+                                  <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
+                                    <div className="bg-yellow-500 text-white text-xs sm:text-sm font-semibold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full w-fit mb-1 sm:mb-2">
+                                      Special Prize
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <h3 className="text-base sm:text-lg font-bold text-white">{campaign.name}</h3>
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+                                  <ImagePlus className="w-12 h-12 text-gray-400" />
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                            <div>
+                            <span className="text-sm text-gray-600">{campaign.description}</span>
+                            </div>
+                              <div className="w-full flex justify-end">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  setEditingCampaign(campaign);
+                                  setIsEditingCampaign(true);
+                                  if (campaign.image) {
+                                    setEditCampaignImage({ file: null, preview: typeof campaign.image === 'string' ? campaign.image : campaign.image?.src || '' });
+                                  }
+                                }}
+                              >
+                                <Edit className="w-4 h-4 text-blue-500" />
+                              </Button>
+                              </div>
+                              
+                            </div>
+                            
+                            <div className="flex justify-between text-xs text-gray-500 mt-2">
+                            <span><span className="font-semibold">Started: </span> {campaign.listingDate}</span>
+                            <span><span className="font-semibold text-yellow-500">Ends: </span> {campaign.endDate}</span>
+                            </div>
+                          </Card>
+                        </div>
+                    </motion.div>
+                    ))}
+                  </div>
+                  <ScrollBar orientation="horizontal" className="bg-gray-100 h-2">
+                    <div className="relative flex-1 rounded-full bg-gray-300" />
+                  </ScrollBar>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Polls Section */}
+          <div className="space-y-6 mt-8 pt-8">
             <Dialog>
               <DialogTrigger asChild>
-              <Card className="cursor-pointer hover:shadow-md transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-medium">Product Polling</CardTitle>
-                <BarChart className="h-5 w-5 text-purple-500" />
-                </CardHeader>
-                <CardContent>
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-600">Compare product performance</p>
-                  <Button variant="outline" size="sm" className="ml-2 rounded-2xl">
-                  <Plus className="h-4 w-4 mr-1" />
-                   Poll
-                  </Button>
+              <div className="w-full flex justify-end">
+<Card className="cursor-pointer w-2/3 hover:shadow-md transition-all duration-300 max-w-md rounded-3xl">
+                  <CardHeader className="flex flex-row justify-between py-4">
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center">
+                     <p className="text-lg font-medium">Product Polling</p>
+                      <Button variant="outline" size="sm" className="ml-2 rounded-2xl">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Poll
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
                 </div>
-                </CardContent>
-              </Card>
+                
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px] h-[80vh] overflow-y-auto rounded-3xl">
               <DialogHeader>
@@ -993,166 +1079,72 @@ export function ActivityTab() {
               </DialogContent>
             </Dialog>
 
-            <div className="col-span-full">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-full md:col-span-1">
-                  <Card className="h-full relative">
-                    <CardHeader>
-                        <CardTitle >Active Campaigns</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="w-full">
-                        <div 
-                          ref={campaignsRef}
-                          className="flex gap-4 pb-4"
-                        >
-                          {productListings.map((campaign, index) => (
-                            <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3, delay: index * 0.1 }}
+            <Card className="w-full pt-6 rounded-3xl">
+              <CardContent>
+                <ScrollArea className="w-full whitespace-nowrap">
+                  <div 
+                    ref={pollsRef}
+                    className="flex gap-4 pb-4"
+                  >
+                    {pollHistory.map((poll) => (
+                      <div key={poll.id} className="w-[300px] flex-none">
+                        <Card key={poll.id} className="p-4 relative">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-semibold">{poll.title}</h3>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                setEditingPoll(poll);
+                                setIsEditModalOpen(true);
+                              }}
+                              className="hover:bg-blue-50"
                             >
-                              <div key={index} className="w-[300px] flex-none">
-                                <Card className="w-full p-4">
-                                  <div className="relative w-full h-48 mb-3 rounded-2xl overflow-hidden group whitespace-nowrap">
-                                    {campaign.image ? (
-                                      <>
-                                        <Image 
-                                          src={campaign.image} 
-                                          alt={campaign.name} 
-                                          fill 
-                                          className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" 
-                                          unoptimized={typeof campaign.image === 'string'} 
-                                        /> 
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/20" />
-                                        <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
-                                          <div className="bg-yellow-500 text-white text-xs sm:text-sm font-semibold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full w-fit mb-1 sm:mb-2">
-                                            Special Prize
-                                          </div>
-                                          <div className="flex items-center justify-between gap-2">
-                                            <h3 className="text-base sm:text-lg font-bold text-white">{campaign.name}</h3>
-                                          </div>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-                                        <ImagePlus className="w-12 h-12 text-gray-400" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div>
-                                  <div>
-                                  <span className="text-sm text-gray-600">{campaign.description}</span>
-                                  </div>
-                                    <div className="w-full flex justify-end">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm"
-                                      onClick={() => {
-                                        setEditingCampaign(campaign);
-                                        setIsEditingCampaign(true);
-                                        if (campaign.image) {
-                                          setEditCampaignImage({ file: null, preview: typeof campaign.image === 'string' ? campaign.image : campaign.image?.src || '' });
-                                        }
-                                      }}
-                                    >
-                                      <Edit className="w-4 h-4 text-blue-500" />
-                                    </Button>
-                                    </div>
-                                    
-                                  </div>
-                                  
-                                  <div className="flex justify-between text-xs text-gray-500 mt-2">
-                                  <span><span className="font-semibold">Started: </span> {campaign.listingDate}</span>
-                                  <span><span className="font-semibold text-yellow-500">Ends: </span> {campaign.endDate}</span>
-                                  </div>
-                                </Card>
-                              </div>
-                          </motion.div>
-                          ))}
-                        </div>
-                        <ScrollBar orientation="horizontal" className="bg-gray-100 h-2">
-                          <div className="relative flex-1 rounded-full bg-gray-300" />
-                        </ScrollBar>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <div className="col-span-full md:col-span-1">
-                  <Card className="h-full">
-                    <CardHeader>
-                        <CardTitle>Active Polls</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="w-full whitespace-nowrap">
-                        <div 
-                          ref={pollsRef}
-                          className="flex gap-4 pb-4"
-                        >
-                          {pollHistory.map((poll) => (
-                            <div key={poll.id} className="w-[300px] flex-none">
-                              <Card key={poll.id} className="p-4 relative">
+                              <Edit2 className="w-4 h-4 text-blue-500" />
+                            </Button>
+                          </div>
+                          <div className="mt-4 space-y-4">
+                              {poll.products.map((product, index) => (
+                              <div key={index} className="space-y-2">
                                 <div className="flex justify-between items-center">
-                                  <h3 className="font-semibold">{poll.title}</h3>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => {
-                                      setEditingPoll(poll);
-                                      setIsEditModalOpen(true);
-                                    }}
-                                    className="hover:bg-blue-50"
-                                  >
-                                    <Edit2 className="w-4 h-4 text-blue-500" />
-                                  </Button>
+                                <span className="text-sm font-medium">{product.name}</span>
+                                <span className="text-sm text-gray-500">{product.votes} votes</span>
                                 </div>
-                                <div className="mt-4 space-y-4">
-                                    {poll.products.map((product, index) => (
-                                    <div key={index} className="space-y-2">
-                                      <div className="flex justify-between items-center">
-                                      <span className="text-sm font-medium">{product.name}</span>
-                                      <span className="text-sm text-gray-500">{product.votes} votes</span>
-                                      </div>
-                                      <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                                      <div 
-                                        className="absolute top-0 left-0 h-full rounded-full transition-all bg-blue-500"
-                                        style={{ 
-                                        width: `${(product.votes / poll.products.reduce((acc, curr) => acc + curr.votes, 0)) * 100}%` 
-                                        }}
-                                      />
-                                      </div>
-                                      {/* <span className="text-xs text-gray-500">
-                                      {Math.round((product.votes / poll.products.reduce((acc, curr) => acc + curr.votes, 0)) * 100)}%
-                                      </span> */}
-                                    </div>
-                                    ))}
+                                <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div 
+                                  className="absolute top-0 left-0 h-full rounded-full transition-all bg-blue-500"
+                                  style={{ 
+                                  width: `${(product.votes / poll.products.reduce((acc, curr) => acc + curr.votes, 0)) * 100}%` 
+                                  }}
+                                />
                                 </div>
+                                {/* <span className="text-xs text-gray-500">
+                                {Math.round((product.votes / poll.products.reduce((acc, curr) => acc + curr.votes, 0)) * 100)}%
+                                </span> */}
+                              </div>
+                              ))}
+                          </div>
 
-                                <div className="bottom-4 right-4 mt-4">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => handleDeletePoll(poll.id)}
-                                    className="hover:bg-red-50"
-                                  >
-                                    <Trash2 className="w-4 h-4 text-red-500" />
-                                  </Button>
-                                </div>
-                              </Card>
-                            </div>
-                          ))}
-                        </div>
-                        <ScrollBar orientation="horizontal" className="bg-gray-100 h-2">
-                          <div className="relative flex-1 rounded-full bg-gray-300" />
-                        </ScrollBar>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </div>
+                          <div className="bottom-4 right-4 mt-4">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeletePoll(poll.id)}
+                              className="hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </Card>
+                      </div>
+                    ))}
+                  </div>
+                  <ScrollBar orientation="horizontal" className="bg-gray-100 h-2">
+                    <div className="relative flex-1 rounded-full bg-gray-300" />
+                  </ScrollBar>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
