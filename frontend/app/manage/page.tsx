@@ -715,7 +715,6 @@ export default function ManagePage() {
               <div className="flex items-center gap-2">
                 <Avatar className="w-9 h-9 rounded-xl">
                   <AvatarImage src={LogoImage.src} alt="" />
-                  <AvatarFallback>MA</AvatarFallback>
                 </Avatar>
                 <span className="text-xl font-semibold text-zinc-800">Mall ai</span>
               </div>
@@ -925,7 +924,7 @@ export default function ManagePage() {
 
       {/* Login Prompt Dialog */}
       <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
-        <DialogContent className="sm:max-w-[600px] rounded-xl p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 overflow-hidden">
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 border-b">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-center">
