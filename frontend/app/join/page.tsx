@@ -524,7 +524,7 @@ export default function JoinPage() {
                         <button
                           type="button"
                           onClick={() => setIsLogin(!isLogin)}
-                          className="ml-2 text-blue-600 hover:text-blue-700 text-sm font-semibold hover:underline transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-sm px-1"
+                          className="ml-2 text-blue-600 hover:text-blue-700 text-sm font-semibold hover:underline transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-3xl px-1"
                         >
                           {isLogin ? "Create one" : "Sign in"}
                           <span className="inline-block ml-1 transition-transform group-hover:translate-x-1">→</span>
@@ -610,7 +610,7 @@ export default function JoinPage() {
 
           {/* Product Cards */}
           <div className="flex justify-center mt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 w-full px-4 sm:px-0 max-w-7xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 w-full px-2 sm:px-0 max-w-7xl">
               {loadingProducts ? (
                 <div className="col-span-full flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -628,7 +628,10 @@ export default function JoinPage() {
                   .slice(currentProductPage * PRODUCTS_PER_PAGE, (currentProductPage + 1) * PRODUCTS_PER_PAGE)
                   .map((product) => (
                     <div key={product.id} className="group w-full max-w-full sm:w-[280px] mx-auto">
-                      <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full">
+                      {/* Undecided hover of Card */}
+                      {/* <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full"> */}
+
+                      <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg h-full">
                         <div className="bg-gradient-to-br from-gray-50 to-gray-100 h-48 flex items-center justify-center relative">
                           <Image
                             src={product.imageSrc || product.imageUrl || "/placeholder.svg"}
@@ -652,14 +655,14 @@ export default function JoinPage() {
                             </button>
                           )}
                         </div>
-                        <div className="py-2 px-4">
+                        <div className="py-2 px-4 w-full bg-white relative">
                           <div className="flex justify-end">
                             <div>
                               <h3 className="font-bold text-lg">{product.brand}</h3>
                             </div>
                           </div>
                           <p className="text-gray-600 text-sm mb-1 line-clamp-2">{product.category}</p>
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center mb-0.5">
                             <div className="flex items-center">
                               <span className="text-lg font-bold">{product.price}</span>
                               <span className="text-sm text-gray-500 ml-1">
@@ -832,38 +835,71 @@ export default function JoinPage() {
             </div>
           )}
 
-          {/* Add link to manage page */}
+          {/* Modernized CPG Brand Product Management Section */}
+                <section className="py-16 mt-12 bg-white overflow-hidden">
+                  <div className="max-w-7xl mx-auto px-2 md:px-4">
+                    {/* Improved CPG Brand Product Management section */}
+                    <div className="w-full rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 shadow-xl p-8 border border-emerald-100 relative overflow-hidden">
+                      {/* Background patterns */}
+                      <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-emerald-200/20"></div>
+                      <div className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-teal-200/20"></div>
+                      
+                      <div className="relative z-10 max-w-4xl mx-auto">
+                        <div className="flex flex-col items-center text-center mb-8">
+                          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full mb-4 shadow-lg">
+                            <Tag className="h-8 w-8 text-white" />
+                          </div>
+                          <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
+                            CPG Brand Product Management
+                          </h3>
+                          <p className="text-slate-700 text-base md:text-lg max-w-3xl mb-6">
+                          Brands can upload product details for their SKUs under Prelims as pre-data.
+                          </p>
+                          
+                          {/* Features grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-8">
+                            <div className="bg-white p-3 rounded-3xl shadow-md hover:shadow-lg transition-all border border-emerald-100 flex items-start justify-around">
+                              <div className="flex-shrink-0 bg-emerald-100 p-3 rounded-3xl">
+                                <Tag className="h-4 w-4 text-emerald-600" />
+                              </div>
+                              <div className="w-full flex items-center h-full justify-center">
+                                <p className="text-sm text-gray-600 leading-relaxed">Upload product details</p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white p-3 rounded-3xl shadow-md hover:shadow-lg transition-all border border-emerald-100 flex items-start space-x-4">
+                              <div className="flex-shrink-0 bg-purple-100 p-3 rounded-3xl">
+                                <BarChart className="h-4 w-4 text-purple-600" />
+                              </div>
+                              <div className="w-full flex items-center h-full justify-center">
+                                <p className="text-sm text-gray-600 leading-relaxed">Track product performance</p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white p-3 rounded-3xl shadow-md hover:shadow-lg transition-all border border-emerald-100 flex items-start space-x-4">
+                              <div className="flex-shrink-0 bg-blue-100 p-3 rounded-3xl">
+                                <QrCode className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div className="w-full flex items-center h-full justify-center">
+                                <p className="text-sm text-gray-600 leading-relaxed">Product label QR codes</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-center">
+                          <Link href="/manage">
+                            <Button className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 flex items-center gap-2 px-8 py-6 text-lg font-medium shadow-md hover:shadow-lg transition-all duration-300">
+                              Go to Manage Page
+                              <ArrowRight className="h-5 w-5" />
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
 
-          <div className="w-full flex flex-col items-center justify-center mt-6 pb-16 pt-20 bg-white px-6 rounded-xl">
-            <div className="max-w-2xl text-center mb-5">
-              <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2">
-                CPG Brand Product Management
-              </h3>
-              <p className="text-gray-600 mb-3 mt-4">
-                Brands can upload product details for their SKUs under Prelims as pre-data.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 mb-4">
-                <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 px-3 py-1.5 rounded-full">
-                  <Tag className="h-4 w-4 text-blue-600" />
-                  <span>Upload product details</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 px-3 py-1.5 rounded-full">
-                  <BarChart className="h-4 w-4 text-purple-600" />
-                  <span>Track product performance</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 px-3 py-1.5 rounded-full">
-                  <QrCode className="h-4 w-4 text-emerald-600" />
-                  <span>Generate product QR codes</span>
-                </div>
-              </div>
-            </div>
-            <Link href="/manage">
-              <Button className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 flex items-center gap-2 px-6 shadow-md">
-                Go to Manage Page
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
