@@ -4,7 +4,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Sparkles, Twitter, Globe, Check, Eye, Download, Share2, Facebook, Instagram, Youtube,
-   Shield, Zap, ChevronDown, Gift, Users, BarChart  } from "lucide-react"
+   Shield, Zap, ChevronDown, Gift, Users, BarChart, Building2  } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Label } from "@/components/ui/label"
 import { QRCodeSVG } from 'qrcode.react'
@@ -718,7 +718,7 @@ export function AdaptHero() {
         </div>
 
         {/* Pricing Section */}
-        <div className="py-14 px-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+        <div className="py-14 px-4">
           <div className="max-w-7xl mx-auto">
             {/* Heading */}
             <motion.div
@@ -905,8 +905,7 @@ export function AdaptHero() {
 
         {/* Free Account Promotion Box - NEW */}
         <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-white overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="rounded-3xl shadow-[0_4px_15px_rgb(0,0,0,0.08)] bg-white overflow-hidden">        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="p-8 md:p-12 flex flex-col justify-center">
                 <div className="inline-flex items-center justify-center bg-blue-100 rounded-full px-3 py-1 mb-6">
                   <Users className="w-4 h-4 text-blue-700 mr-2" />
@@ -981,22 +980,29 @@ export function AdaptHero() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="p-3 bg-gray-50 rounded-xl">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-full bg-gray-200"></div>
-                            <div className="ml-3 flex-1">
-                              <h4 className="text-xs font-medium">Brand Campaign {i}</h4>
-                              <div className="flex items-center mt-1">
-                                <div className="h-1.5 w-24 bg-gray-200 rounded-full overflow-hidden">
-                                  <div className="h-full bg-blue-500 rounded-full" style={{width: `${i * 25}%`}}></div>
-                                </div>
-                                <span className="text-xs text-gray-500 ml-2">{i * 25}%</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                    {[1, 2, 3].map((i) => (
+  <div key={i} className="p-3 bg-gray-50 rounded-xl">
+    <div className="flex items-center">
+      <div className={`w-8 h-8 rounded-full ${
+        i === 1 ? 'bg-blue-100' : 
+        i === 2 ? 'bg-purple-100' : 
+        'bg-emerald-100'
+      } flex items-center justify-center`}>
+          <Building2 className="w-4 h-4 text-blue-600" />
+
+      </div>
+      <div className="ml-3 flex-1">
+        <h4 className="text-xs font-medium">Brand Campaign {i}</h4>
+        <div className="flex items-center mt-1">
+          <div className="h-1.5 w-24 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-500 rounded-full" style={{width: `${i * 25}%`}}></div>
+          </div>
+          <span className="text-xs text-gray-500 ml-2">{i * 25}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+))}
                     </div>
                   </div>
                 </div>
