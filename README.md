@@ -4,6 +4,7 @@ Then cd backend and npm run dev
 Main Routes
 /join
 /homepage
+/manage
 /joyride
 /itscalledw
 /ketone
