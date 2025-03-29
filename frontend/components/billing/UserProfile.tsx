@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,9 +15,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
   
   const isPremium = userData.subscriptionPlan === "Pro";
   const userTypeDisplay = {
-    investor: isPremium ? "Premium Investor" : "Investor",
-    founder: isPremium ? "Premium Founder" : "Founder",
-    eventPlanner: isPremium ? "Premium Event Planner" : "Event Planner"
+    buyer: isPremium ? "Premium Buyer" : "Buyer",
+    seller: isPremium ? "Premium Seller" : "Seller",
+    agent: isPremium ? "Premium Agent" : "Agent",
+    admin: "Admin"
   }[userData.userType] || "User";
   
   return (
