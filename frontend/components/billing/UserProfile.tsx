@@ -14,7 +14,7 @@ interface UserProfileProps {
 const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
   if (!userData) return null;
   
-  const isPremium = userData.subscriptionPlan === "premium";
+  const isPremium = userData.subscriptionPlan === "Pro";
   const userTypeDisplay = {
     investor: isPremium ? "Premium Investor" : "Investor",
     founder: isPremium ? "Premium Founder" : "Founder",
