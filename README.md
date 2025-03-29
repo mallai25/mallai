@@ -9,3 +9,5 @@ Main Routes
 /itscalledw
 /ketone
 /product - main product profile page for new products
+
+Some things mentioned / placed in code is for later implementation ( future builds )
