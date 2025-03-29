@@ -12,7 +12,7 @@ interface UserData {
   displayName: string;
   location: string;
   photoURL?: string;
-  subscriptionPlan?: "free" | "pro" | "business";
+  subscriptionPlan?: "Basic" | "Pro" | "Conditioned";
   subscriptionEndDate?: Date;
   phone?: string;
   listings?: string[];
