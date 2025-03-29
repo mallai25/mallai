@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,10 +16,14 @@ import {
   Cloud,
   Edit,
   ArrowLeft,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import Image from 'next/image';
 import axios from 'axios';
+import { getAuth } from "firebase/auth";
+import { doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
+import { FIREBASE_DB } from '../../../FirebaseConfig';
 
 interface ChatMessage {
   id: number;
@@ -32,6 +36,11 @@ interface AIGenerationInlineProps {
   onSelectImage: (imageUrl: string) => void;
 }
 
+interface DraftImage {
+  url: string;
+  createdAt: string;
+}
+
 export function AIGenerationInline({ onSelectImage }: AIGenerationInlineProps) {
   const [activeTab, setActiveTab] = useState("chat");
   const [chatInput, setChatInput] = useState("");
@@ -42,16 +51,44 @@ export function AIGenerationInline({ onSelectImage }: AIGenerationInlineProps) {
   const [bgRemovalImage, setBgRemovalImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [geminiMessage, setGeminiMessage] = useState<string | null>(null);
-  const [savedDrafts, setSavedDrafts] = useState<string[]>([]);
+  const [savedDrafts, setSavedDrafts] = useState<(string | DraftImage)[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   const { toast } = useToast();
   
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { id: 1, role: 'system', content: 'Create a product image or upload & edit one' }
   ]);
+
+  useEffect(() => {
+    const unsubscribe = getAuth().onAuthStateChanged((user) => {
+      if (user) {
+        setCurrentUser(user);
+        fetchUserDrafts(user.uid);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const fetchUserDrafts = async (userId: string) => {
+    try {
+      const userDoc = await getDoc(doc(FIREBASE_DB, 'users', userId));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setSavedDrafts(userData.draftImages || []);
+      }
+    } catch (error) {
+      console.error('Error fetching drafts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load saved drafts",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleSendMessage = () => {
     if (!chatInput.trim() && !selectedImage) return;
@@ -213,7 +250,21 @@ export function AIGenerationInline({ onSelectImage }: AIGenerationInlineProps) {
       const cloudinaryUrl = await uploadToCloudinary(imageUrl);
       
       if (cloudinaryUrl) {
-        setSavedDrafts(prev => [...prev, cloudinaryUrl]);
+        const newDraft = {
+          url: cloudinaryUrl,
+          createdAt: new Date().toISOString()
+        };
+
+        if (currentUser) {
+          // Save to Firebase if user is logged in
+          const userRef = doc(FIREBASE_DB, 'users', currentUser.uid);
+          await updateDoc(userRef, {
+            draftImages: arrayUnion(newDraft)
+          });
+        }
+
+        // Update local state
+        setSavedDrafts(prev => [...prev, newDraft]);
         setIsSaved(true);
         
         toast({
@@ -255,10 +306,8 @@ export function AIGenerationInline({ onSelectImage }: AIGenerationInlineProps) {
     try {
       let blob;
       if (isProcessedImage) {
-        // If it's a processed image (blob URL), we already have the blob
         blob = await fetch(imageUrl).then(r => r.blob());
       } else {
-        // If it's a remote URL (from drafts), fetch it first
         blob = await fetch(imageUrl).then(r => r.blob());
       }
       
@@ -266,6 +315,7 @@ export function AIGenerationInline({ onSelectImage }: AIGenerationInlineProps) {
       reader.onload = (event) => {
         if (event.target?.result) {
           setSelectedImage(event.target.result as string);
+          onSelectImage(event.target.result as string); // Call the parent's onSelectImage
           setActiveTab("chat");
         }
       };
@@ -275,6 +325,46 @@ export function AIGenerationInline({ onSelectImage }: AIGenerationInlineProps) {
       toast({
         title: "Error",
         description: "Failed to load image",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteDraft = async (draftToDelete: string | DraftImage) => {
+    if (!currentUser) return;
+    
+    try {
+      const userRef = doc(FIREBASE_DB, 'users', currentUser.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (userDoc.exists()) {
+        const currentDrafts = userDoc.data().draftImages || [];
+        const updatedDrafts = currentDrafts.filter((draft: string | DraftImage) => {
+          if (typeof draft === 'string' && typeof draftToDelete === 'string') {
+            return draft !== draftToDelete;
+          }
+          if (typeof draft === 'object' && typeof draftToDelete === 'object') {
+            return draft.url !== draftToDelete.url;
+          }
+          return true;
+        });
+        
+        await updateDoc(userRef, {
+          draftImages: updatedDrafts
+        });
+        
+        setSavedDrafts(updatedDrafts);
+        
+        toast({
+          title: "Success",
+          description: "Draft deleted successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting draft:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete draft",
         variant: "destructive"
       });
     }
@@ -601,23 +691,33 @@ export function AIGenerationInline({ onSelectImage }: AIGenerationInlineProps) {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
-          {savedDrafts.map((imageUrl, index) => (
+          {savedDrafts.map((draft, index) => (
             <div key={index} className="relative group">
-              <div className="border rounded-lg overflow-hidden aspect-square relative">
+              <div className="border rounded-2xl overflow-hidden aspect-square relative">
                 <Image
-                  src={imageUrl}
+                  src={typeof draft === 'string' ? draft : draft.url}
                   alt={`Draft ${index + 1}`}
                   fill
                   style={{ objectFit: 'contain' }}
                   className="p-2"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div
-                    className="inline-flex items-center px-4 py-2 rounded-lg bg-white hover:bg-gray-100 cursor-pointer transition-colors text-sm font-medium"
-                    onClick={() => handleUseDraftImage(imageUrl)}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="bg-white/90 rounded-2xl hover:bg-white absolute transform -translate-y-8"
+                    onClick={() => handleUseDraftImage(typeof draft === 'string' ? draft : draft.url)}
                   >
                     Use Image
-                  </div>
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-white/80 hover:bg-red-50 hover:text-red-600 rounded-full"
+                    onClick={() => handleDeleteDraft(draft)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>
