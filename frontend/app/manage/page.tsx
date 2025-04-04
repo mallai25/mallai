@@ -929,7 +929,7 @@ export default function ManagePage() {
                             variant="destructive"
                             size="sm"
                             className="rounded-full"
-                            onClick={() => deleteProduct(product.id)}
+                            // onClick={() => deleteProduct(product.id)}
                             disabled={!user}
                           >
                             <Trash2 className="h-4 w-4" />
