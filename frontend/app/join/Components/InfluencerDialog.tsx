@@ -76,11 +76,11 @@ export function InfluencerDialog({ influencer, product, open, onOpenChange }: In
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] overflow-y-auto max-h-[90vh] p-3 sm:p-6 rounded-2xl sm:rounded-2xl">
-        <DialogHeader className="mb-3 sm:mb-4">
+      <DialogContent className="sm:max-w-[610px] overflow-y-auto max-h-[90vh] p-3 sm:p-6 rounded-2xl sm:rounded-2xl">
+        <DialogHeader className="mb-3 sm:mb-2">
           <DialogTitle className="text-lg sm:text-2xl">Brand Influencer</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col md:flex-row gap-3 sm:gap-6">
+        <div className="flex flex-col md:flex-row gap-3 sm:gap-6 mb-2">
           <div className="w-full md:w-1/3 flex flex-col items-center">
             <div className="relative w-32 h-32 sm:w-32 sm:h-32 md:w-full md:h-48 rounded-full overflow-hidden border-4 border-white shadow-xl mb-3">
               <Image
