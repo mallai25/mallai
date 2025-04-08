@@ -188,7 +188,7 @@ export default function JoinPage() {
                   transition={{ delay: 0.2 }}
                   className="text-3xl md:text-5xl font-bold leading-tight tracking-tight"
                 >
-                  Track Your <span className="text-[#4147d5]">Brand Rewards</span> In One Place
+                  Stay Connected <span className="text-[#4147d5]">With Your</span> Favorite Brands
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -196,8 +196,7 @@ export default function JoinPage() {
                   transition={{ delay: 0.3 }}
                   className="text-gray-600 text-base md:text-xl leading-relaxed mt-4"
                 >
-                  Stay connected with your favorite influencer brands, participate in exclusive polls, and unlock
-                  special giveaways.
+                  Participate in exclusive polls, rewards campaigns and unlock special giveaways.
                 </motion.p>
               </div>
 
@@ -767,7 +766,7 @@ export default function JoinPage() {
                                                         alt={item.name}
                                                         layout="fill"
                                                         objectFit="cover"
-                                                        className="object-contain transform scale-75 group-hover/card:scale-90 transition-transform duration-300 ease-in-out"
+                                                        className="object-contain transform scale-75 group-hover/card:scale-90 transition-transform duration-300 ease-in-out rounded-xl"
                                                       />
                                                     </div>
                                                   </div>
