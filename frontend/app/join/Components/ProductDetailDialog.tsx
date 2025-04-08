@@ -44,12 +44,12 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
           <div className="w-full md:w-1/2">
             <div className="relative">
               <Card>
-                <div className="relative h-[300px] rounded-lg overflow-hidden">
+                <div className="relative h-[300px] rounded-xl overflow-hidden">
                   <Image
                     src={product.imageSrc || product.imageUrl}
                     alt={product.name}
                     fill
-                    className="object-contain w-full h-full"
+                    className="object-cover w-full h-full"
                   />
                 </div>
               </Card>
