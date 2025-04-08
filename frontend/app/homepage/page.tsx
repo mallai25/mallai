@@ -941,7 +941,7 @@ export default function HomePage() {
                                                         alt={item.name}
                                                         width={200}
                                                         height={200}
-                                                        className="object-contain transform scale-75 group-hover/card:scale-90 transition-transform duration-300 ease-in-out"
+                                                        className="object-contain transform scale-75 group-hover/card:scale-90 transition-transform duration-300 ease-in-out rounded-xl"
                                                       />
                                                     </div>
                                                   </div>
