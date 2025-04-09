@@ -20,7 +20,10 @@ import {
   Twitter,
   Youtube,
   Package,
+  Tag,
+  DollarSign,
   Layers,
+  Users,
   RefreshCw,
   CheckCircle,
   Globe,
@@ -31,12 +34,13 @@ import {
 } from "lucide-react"
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../../FirebaseConfig"
 import { collection, getDocs, doc, deleteDoc, setDoc } from "firebase/firestore"
-import { signOut } from "firebase/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -50,29 +54,13 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import { InstagramIcon as TiktokIcon } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import axios from "axios"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signOut } from "firebase/auth"
 import { EditProductDialog } from "../editModal"
 
 import LogoImage from "../login/Images/download.png"
-
-// Define the TikTok icon component
-const TiktokIcon = (props) => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-  </svg>
-)
 
 // Define types for our data
 interface SocialAccount {
@@ -283,25 +271,6 @@ export default function ManagePage() {
     }
   }
 
-  // Handle logout
-  const handleLogout = async () => {
-    try {
-      await signOut(FIREBASE_AUTH)
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account.",
-      })
-      // Stay on the current page
-    } catch (error) {
-      console.error("Error signing out:", error)
-      toast({
-        title: "Error logging out",
-        description: "There was an error logging out. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
   // Fetch products from Firestore
   const fetchProducts = async () => {
     try {
@@ -316,6 +285,8 @@ export default function ManagePage() {
         description: "There was an error loading products. Please try again.",
         variant: "destructive",
       })
+      // Set empty array to prevent UI from being stuck in loading state
+      setProducts([])
     }
   }
 
@@ -832,7 +803,26 @@ export default function ManagePage() {
               </Button>
             </Link>
             {user ? (
-              <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2 rounded-full">
+              <Button
+                onClick={async () => {
+                  try {
+                    await signOut(FIREBASE_AUTH)
+                    toast({
+                      title: "Logged out successfully",
+                      description: "You have been logged out of your account.",
+                    })
+                  } catch (error) {
+                    console.error("Error signing out:", error)
+                    toast({
+                      title: "Error logging out",
+                      description: "There was an error logging out. Please try again.",
+                      variant: "destructive",
+                    })
+                  }
+                }}
+                variant="outline"
+                className="flex items-center gap-2 rounded-full"
+              >
                 <LogOut className="w-4 h-4" />
                 <span>Logout</span>
               </Button>
@@ -850,45 +840,33 @@ export default function ManagePage() {
         </div>
       </header>
 
-      {/* Notification for non-authenticated users */}
-      {!user && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center gap-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-blue-500"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <div className="flex-1">
-              <p className="text-blue-800 text-sm">
-                You're browsing as a guest. <span className="font-medium">Log in</span> to add or edit products.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full border-blue-200 text-blue-700 hover:bg-blue-100"
-              onClick={() => setShowLoginPrompt(true)}
-            >
-              Login
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {!user && (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
+            <div className="text-blue-500 mt-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-medium text-blue-800">Browsing as Guest</h3>
+              
+            </div>
+          </div>
+        )}
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Product Management</h1>
           <p className="text-gray-600 mt-1">Manage your products and influencers on Mall ai platform.</p>
@@ -935,11 +913,12 @@ export default function ManagePage() {
               </div>
 
               <Button
-                onClick={() => (user ? setShowAddProduct(true) : setShowLoginPrompt(true))}
+                onClick={() => setShowAddProduct(true)}
                 className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 w-full md:w-auto"
+                title={"Add a new product"}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                {user ? "Add Product" : "Login to Add Product"}
+                Add Product
               </Button>
             </div>
           </div>
@@ -969,9 +948,8 @@ export default function ManagePage() {
                             variant="secondary"
                             size="sm"
                             className="h-8 w-8 p-0 rounded-full bg-white/80 hover:bg-white shadow-md"
-                            onClick={() => (user ? setEditingProduct(product) : setShowLoginPrompt(true))}
-                            title={user ? "Edit product" : "Login to edit product"}
-                            disabled={!user}
+                            onClick={() => setEditingProduct(product)}
+                            title={user ? "Edit product" : "View product details (login to edit)"}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1031,7 +1009,7 @@ export default function ManagePage() {
                             size="sm"
                             className="rounded-full"
                             onClick={() => deleteProduct(product.id)}
-                            disabled={!user || (product.uploaderId && product.uploaderId !== user.uid)}
+                            disabled={!user || (product.uploaderId && user && product.uploaderId !== user.uid)}
                             title={
                               !user
                                 ? "Login to delete products"
@@ -1057,7 +1035,7 @@ export default function ManagePage() {
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
                   {searchQuery || categoryFilter !== "all"
                     ? "No products match your search criteria."
-                    : "No products have been added yet."}
+                    : "You haven't added any products yet."}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   {(searchQuery || categoryFilter !== "all") && (
@@ -1073,6 +1051,17 @@ export default function ManagePage() {
                       Clear Filters
                     </Button>
                   )}
+                  {/* <Button
+                    onClick={() => {
+                      setSearchQuery("")
+                      setCategoryFilter("all")
+                      setShowAddProduct(true)
+                    }}
+                    className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Product
+                  </Button> */}
                 </div>
               </div>
             )}
@@ -1247,6 +1236,29 @@ export default function ManagePage() {
                 <DialogDescription>
                   {user ? "Fill in the details below to add a new product." : "Please log in to add a new product."}
                 </DialogDescription>
+                {!user && (
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+                    <div className="flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-amber-500"
+                      >
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                      <span>You are in view-only mode. Please log in to add or edit products.</span>
+                    </div>
+                  </div>
+                )}
               </DialogHeader>
 
               <Accordion type="single" collapsible defaultValue="product-details">
@@ -1348,13 +1360,791 @@ export default function ManagePage() {
                         </div>
                       </div>
 
-                      {/* Rest of the dialog content remains the same */}
-                      {/* ... */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <Label htmlFor="product-name" className="text-gray-700">
+                            Product Name
+                          </Label>
+                          <div className="mt-1 relative">
+                            <Input
+                              id="product-name"
+                              placeholder="Enter product name"
+                              value={newProduct.name}
+                              onChange={(e) => user && setNewProduct({ ...newProduct, name: e.target.value })}
+                              className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                              disabled={!user}
+                            />
+                            <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="product-brand" className="text-gray-700">
+                            Brand
+                          </Label>
+                          <div className="mt-1 relative">
+                            <Input
+                              id="product-brand"
+                              placeholder="Enter brand name"
+                              value={newProduct.brand}
+                              onChange={(e) => user && setNewProduct({ ...newProduct, brand: e.target.value })}
+                              className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                              disabled={!user}
+                            />
+                            <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <Label htmlFor="product-category" className="text-gray-700">
+                            Category
+                          </Label>
+                          <div className="mt-1"></div>
+                          <Select
+                            value={newProduct.category.toLowerCase()}
+                            onValueChange={(value) => {
+                              if (user) {
+                                // Capitalize the first letter of the category
+                                const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1)
+                                setNewProduct({ ...newProduct, category: capitalizedValue })
+                              }
+                            }}
+                            disabled={!user}
+                          >
+                            <SelectTrigger
+                              id="product-category"
+                              className="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12"
+                            >
+                              <div className="flex items-center pl-1">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="text-gray-400 mr-2"
+                                >
+                                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+                                </svg>
+                                {/* Display the formatted category name */}
+                                <SelectValue placeholder="Select category" className="capitalize" />
+                              </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="beverage">Beverage</SelectItem>
+                              <SelectItem value="coffee">Coffee</SelectItem>
+                              <SelectItem value="snacks">Snacks</SelectItem>
+                              <SelectItem value="breakfast">Breakfast</SelectItem>
+                              <SelectItem value="personal Care">Personal Care</SelectItem>
+                              <SelectItem value="supplements">Supplements</SelectItem>
+                              <SelectItem value="alcohol">Alcohol</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="product-price" className="text-gray-700">
+                              Price
+                            </Label>
+                            <div className="mt-1 relative">
+                              <Input
+                                id="product-price"
+                                placeholder="e.g. 12.99"
+                                value={newProduct.price}
+                                onChange={(e) => {
+                                  if (user) {
+                                    // Remove any existing $ symbol and only allow numbers and decimal point
+                                    const value = e.target.value.replace(/^\$/, "").replace(/[^\d.]/g, "")
+                                    setNewProduct({ ...newProduct, price: value ? `$${value}` : "" })
+                                  }
+                                }}
+                                className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                                disabled={!user}
+                              />
+                              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="product-price-unit" className="text-gray-700">
+                              Price Unit
+                            </Label>
+                            <div className="mt-1">
+                              <Input
+                                id="product-price-unit"
+                                placeholder="e.g. pack, bag"
+                                value={newProduct.priceUnit}
+                                onChange={(e) => user && setNewProduct({ ...newProduct, priceUnit: e.target.value })}
+                                className="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                                disabled={!user}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Added Weight and GTIN inputs */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <Label htmlFor="product-weight" className="text-gray-700">
+                            Weight
+                          </Label>
+                          <div className="mt-1 relative">
+                            <Input
+                              id="product-weight"
+                              placeholder="e.g. 250g, 1kg"
+                              value={newProduct.weight}
+                              onChange={(e) => user && setNewProduct({ ...newProduct, weight: e.target.value })}
+                              className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                              disabled={!user}
+                            />
+                            <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="product-gtin" className="text-gray-700">
+                            GTIN Number
+                          </Label>
+                          <div className="mt-1 relative">
+                            <Input
+                              id="product-gtin"
+                              placeholder="e.g. 1234567890123"
+                              value={newProduct.gtin}
+                              onChange={(e) => user && setNewProduct({ ...newProduct, gtin: e.target.value })}
+                              className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                              disabled={!user}
+                            />
+                            <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Add Product Description field */}
+                      <div>
+                        <Label htmlFor="product-description" className="text-gray-700">
+                          Product Description
+                        </Label>
+                        <div className="mt-1 relative">
+                          <Textarea
+                            id="product-description"
+                            placeholder="Enter product description"
+                            value={newProduct.description}
+                            onChange={(e) => user && setNewProduct({ ...newProduct, description: e.target.value })}
+                            className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-base min-h-[120px]"
+                            disabled={!user}
+                          />
+                          <div className="absolute left-3 top-3 h-5 w-5 text-gray-400">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                              <line x1="16" y1="13" x2="8" y2="13"></line>
+                              <line x1="16" y1="17" x2="8" y2="17"></line>
+                              <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      {user &&
+                        newProduct.imageSrc &&
+                        newProduct.name &&
+                        newProduct.brand &&
+                        newProduct.category &&
+                        newProduct.price && (
+                          <div className="flex justify-center mt-6">
+                            <Button
+                              type="button"
+                              variant="default"
+                              className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                              onClick={() => {
+                                // Add the main product as the first similar product
+                                const mainAsSimilar: SimilarProduct = {
+                                  id: uuidv4(),
+                                  name: newProduct.name,
+                                  description: newProduct.description || `Original ${newProduct.name}`,
+                                  imageUrl: newProduct.imageSrc,
+                                  weight: newProduct.weight,
+                                  gtin: newProduct.gtin,
+                                  brand: newProduct.brand, // Explicitly add the brand name from the main product
+                                  mainProductId: newProduct.id, // Add the main product ID reference to itself
+                                }
+
+                                // Update the mainProductId state with the current product ID
+                                setMainProductId(newProduct.id)
+
+                                setNewProduct({
+                                  ...newProduct,
+                                  similarProducts: [mainAsSimilar, ...newProduct.similarProducts],
+                                })
+
+                                // Pre-fill the similar product form with the weight, brand, and mainProductId from the main product
+                                setNewSimilarProduct({
+                                  ...newSimilarProduct,
+                                  weight: newProduct.weight || "",
+                                  brand: newProduct.brand || "",
+                                  mainProductId: newProduct.id, // Add the main product ID reference
+                                })
+
+                                // Reset weight edit mode
+                                setWeightEditMode(false)
+
+                                // Close the current accordion and open the Similar Products accordion
+                                const accordionTrigger = document.querySelector(
+                                  '[data-state="open"] button[data-state="open"]',
+                                )
+                                if (accordionTrigger) {
+                                  ;(accordionTrigger as HTMLButtonElement).click()
+                                }
+                                const similarProductsTrigger = document.querySelector(
+                                  '[value="similar-products"] button',
+                                )
+                                if (similarProductsTrigger) {
+                                  ;(similarProductsTrigger as HTMLButtonElement).click()
+                                }
+                              }}
+                              disabled={!user}
+                            >
+                              Continue to Similar Products
+                            </Button>
+                          </div>
+                        )}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
-                {/* Rest of the accordion items remain the same */}
-                {/* ... */}
+
+                <AccordionItem value="similar-products" className="border-none mt-4">
+                  <AccordionTrigger className="py-4 px-6 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Layers className="h-5 w-5 text-indigo-600" />
+                      <span className="font-semibold text-indigo-800">Similar Products</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-6 px-1">
+                    <div className="space-y-6">
+                      <Card className="border-dashed border-gray-300 bg-gray-50">
+                        <CardHeader>
+                          <CardTitle className="text-lg font-medium">Add SKUs</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Image Upload Area - Taller and positioned left */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="border border-gray-200 rounded-3xl p-4 flex flex-col items-center justify-center bg-white">
+                              <div className="h-48 w-full rounded-3xl flex items-center justify-center overflow-hidden mb-3 relative">
+                                {newSimilarProduct.imageUrl ? (
+                                  <>
+                                    <Image
+                                      src={newSimilarProduct.imageUrl || "/placeholder.svg"}
+                                      alt="Similar Product"
+                                      fill
+                                      className="object-contain"
+                                    />
+                                    <button
+                                      onClick={() =>
+                                        user && setNewSimilarProduct({ ...newSimilarProduct, imageUrl: "" })
+                                      }
+                                      className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/40 hover:bg-black/60 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none inline-flex items-center justify-center"
+                                      disabled={!user}
+                                    >
+                                      <X className="h-4 w-4 text-white" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    onClick={() => user && similarProductImageInputRef.current?.click()}
+                                    className="w-full h-full rounded-full flex items-center justify-center transition-colors duration-200"
+                                    disabled={!user}
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="32"
+                                      height="32"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      className={!user ? "text-gray-300" : "text-gray-600"}
+                                    >
+                                      <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+                                      <path d="M12 12v9" />
+                                      <path d="m16 16-4-4-4 4" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+                              <input
+                                type="file"
+                                className="hidden"
+                                ref={similarProductImageInputRef}
+                                accept="image/*"
+                                onChange={handleSimilarProductImageUpload}
+                                disabled={uploadingImage || !user}
+                              />
+                              {!newSimilarProduct.imageUrl && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => user && similarProductImageInputRef.current?.click()}
+                                  disabled={uploadingImage || !user}
+                                  className="rounded-full"
+                                  size="sm"
+                                >
+                                  {uploadingImage ? "Uploading..." : "Upload Image"}
+                                </Button>
+                              )}
+                            </div>
+
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="similar-name" className="text-gray-700">
+                                  Name
+                                </Label>
+                                <div className="mb-1"></div>
+                                <Input
+                                  id="similar-name"
+                                  placeholder="Enter variation name"
+                                  value={newSimilarProduct.name}
+                                  onChange={(e) =>
+                                    user && setNewSimilarProduct({ ...newSimilarProduct, name: e.target.value })
+                                  }
+                                  className="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                                  disabled={!user}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="similar-description" className="text-gray-700">
+                                  Description
+                                </Label>
+                                <div className="mb-1"></div>
+                                <Textarea
+                                  id="similar-description"
+                                  placeholder="Enter short description"
+                                  value={newSimilarProduct.description}
+                                  onChange={(e) =>
+                                    user && setNewSimilarProduct({ ...newSimilarProduct, description: e.target.value })
+                                  }
+                                  className="rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-base"
+                                  rows={2}
+                                  disabled={!user}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="similar-weight" className="text-gray-700">
+                                  Weight
+                                </Label>
+                                <div className="mb-1"></div>
+                                <div className="relative flex items-center">
+                                  <Input
+                                    id="similar-weight"
+                                    placeholder="e.g. 250g, 1kg"
+                                    value={newSimilarProduct.weight}
+                                    onChange={(e) =>
+                                      user &&
+                                      weightEditMode &&
+                                      setNewSimilarProduct({ ...newSimilarProduct, weight: e.target.value })
+                                    }
+                                    className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                                    disabled={!user || !weightEditMode}
+                                  />
+                                  <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                  {user && newSimilarProduct.weight && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="absolute right-2 h-8 w-8 p-0 rounded-full"
+                                      onClick={() => setWeightEditMode(!weightEditMode)}
+                                    >
+                                      {weightEditMode ? (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                      ) : (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          className="text-blue-500"
+                                        >
+                                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                          <path d="m15 5 4 4" />
+                                        </svg>
+                                      )}
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <Label htmlFor="similar-gtin" className="text-gray-700">
+                                  GTIN Number
+                                </Label>
+                                <div className="mb-1"></div>
+                                <div className="relative">
+                                  <Input
+                                    id="similar-gtin"
+                                    placeholder="e.g. 1234567890123"
+                                    value={newSimilarProduct.gtin}
+                                    onChange={(e) =>
+                                      user && setNewSimilarProduct({ ...newSimilarProduct, gtin: e.target.value })
+                                    }
+                                    className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                                    disabled={!user}
+                                  />
+                                  <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="w-full flex justify-center mt-1">
+                            <Button
+                              type="button"
+                              onClick={addSimilarProduct}
+                              className="w-2/3 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              disabled={!user}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Similar Product
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <div className="mt-6">
+                        <h4 className="text-sm font-medium mb-2 text-gray-700">Added Similar Products</h4>
+                        {newProduct.similarProducts.length > 0 ? (
+                          <div className="space-y-3">
+                            {newProduct.similarProducts.map((product) => (
+                              <div
+                                key={product.id}
+                                className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                <div className="h-12 w-12 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+                                  <Image
+                                    src={product.imageUrl || "/placeholder.svg?height=48&width=48"}
+                                    alt={product.name}
+                                    width={48}
+                                    height={48}
+                                    className="object-contain"
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">{product.name}</p>
+                                  <div className="flex gap-2 text-xs text-gray-500">
+                                    <span>{product.description}</span>
+                                    {product.brand && <span className="text-purple-500">Brand: {product.brand}</span>}
+                                    {product.weight && <span className="text-blue-500">Weight: {product.weight}</span>}
+                                    {product.gtin && <span className="text-green-500">GTIN: {product.gtin}</span>}
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 rounded-full text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => user && removeSimilarProduct(product.id)}
+                                  disabled={!user}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 border border-dashed border-gray-200 rounded-lg">
+                            <p className="text-sm text-gray-500">No similar products added yet.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="influencer-details" className="border-none mt-4">
+                  <AccordionTrigger className="py-4 px-6 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-5 w-5 text-purple-600" />
+                      <span className="font-semibold text-purple-800">Influencer Details (Optional)</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-6 px-1">
+                    <div className="space-y-6">
+                      <Card className="overflow-hidden border-gray-200">
+                        <CardContent className="p-0">
+                          <div className="flex flex-col md:flex-row">
+                            {/* Left side - Image upload */}
+                            <div className="w-full md:w-1/3 bg-gradient-to-br from-purple-50 to-pink-50 p-6 flex flex-col items-center justify-center">
+                              <div className="h-48 w-48 rounded-full border-2 border-white shadow-md flex items-center justify-center overflow-hidden bg-white mb-4 relative">
+                                {newInfluencer.image ? (
+                                  <>
+                                    <Image
+                                      src={newInfluencer.image || "/placeholder.svg"}
+                                      alt="Influencer"
+                                      fill
+                                      className="object-cover"
+                                    />
+                                    <button
+                                      onClick={() => user && setNewInfluencer({ ...newInfluencer, image: "" })}
+                                      className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/40 hover:bg-black/60 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none inline-flex items-center justify-center"
+                                      disabled={!user}
+                                    >
+                                      <X className="h-4 w-4 text-white" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <User className={`h-24 w-24 ${!user ? "text-gray-200" : "text-gray-300"}`} />
+                                )}
+                              </div>
+                              <input
+                                type="file"
+                                className="hidden"
+                                ref={influencerImageInputRef}
+                                accept="image/*"
+                                onChange={handleInfluencerImageUpload}
+                                disabled={uploadingImage || !user}
+                              />
+                              {newInfluencer.image ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => user && influencerImageInputRef.current?.click()}
+                                  disabled={uploadingImage || !user}
+                                  className="rounded-full mt-2"
+                                >
+                                  {uploadingImage ? (
+                                    <div className="flex items-center">
+                                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-500 mr-2"></div>
+                                      Uploading...
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center">
+                                      <Upload className="h-4 w-4 mr-2" />
+                                      Change Image
+                                    </div>
+                                  )}
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => user && influencerImageInputRef.current?.click()}
+                                  disabled={uploadingImage || !user}
+                                  className="rounded-full"
+                                >
+                                  {uploadingImage ? (
+                                    <div className="flex items-center">
+                                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-500 mr-2"></div>
+                                      Uploading...
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center">
+                                      <Upload className="h-4 w-4 mr-2" />
+                                      Upload Image
+                                    </div>
+                                  )}
+                                </Button>
+                              )}
+                            </div>
+
+                            {/* Right side - Influencer details */}
+                            <div className="w-full md:w-2/3 p-6">
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="influencer-name" className="text-gray-700">
+                                    Name
+                                  </Label>
+                                  <div className="mt-1 relative">
+                                    <Input
+                                      id="influencer-name"
+                                      placeholder="Enter influencer name"
+                                      value={newInfluencer.name}
+                                      onChange={(e) =>
+                                        user && setNewInfluencer({ ...newInfluencer, name: e.target.value })
+                                      }
+                                      className="pl-10 rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 h-12 text-base"
+                                      disabled={!user}
+                                    />
+                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <Label htmlFor="influencer-bio" className="text-gray-700">
+                                    Bio
+                                  </Label>
+                                  <div className="mb-1"></div>
+                                  <Textarea
+                                    id="influencer-bio"
+                                    placeholder="Enter influencer bio"
+                                    value={newInfluencer.bio}
+                                    onChange={(e) =>
+                                      user && setNewInfluencer({ ...newInfluencer, bio: e.target.value })
+                                    }
+                                    rows={3}
+                                    className="rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 text-base"
+                                    disabled={!user}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <div className="mt-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-medium text-gray-700">Social Accounts</h4>
+                        </div>
+                        <Card className="border-dashed border-gray-300 bg-gray-50">
+                          <CardContent className="p-4 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="social-platform" className="text-gray-700">
+                                  Platform
+                                </Label>
+                                <div className="mb-1"></div>
+                                <Select
+                                  value={newSocialAccount.icon}
+                                  onValueChange={handleSocialPlatformChange}
+                                  disabled={!user}
+                                >
+                                  <SelectTrigger
+                                    id="social-platform"
+                                    className="rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 h-12"
+                                  >
+                                    <SelectValue placeholder="Select platform" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Facebook">
+                                      <div className="flex items-center">
+                                        <Facebook className="h-4 w-4 text-[#1877F2] mr-2" />
+                                        Facebook
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="Instagram">
+                                      <div className="flex items-center">
+                                        <Instagram className="h-4 w-4 text-[#E4405F] mr-2" />
+                                        Instagram
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="Twitter">
+                                      <div className="flex items-center">
+                                        <Twitter className="h-4 w-4 text-[#1DA1F2] mr-2" />
+                                        Twitter
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="Youtube">
+                                      <div className="flex items-center">
+                                        <Youtube className="h-4 w-4 text-[#FF0000] mr-2" />
+                                        YouTube
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="TikTok">
+                                      <div className="flex items-center">
+                                        <TiktokIcon className="h-4 w-4 text-black mr-2" />
+                                        TikTok
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="Website">
+                                      <div className="flex items-center">
+                                        <Globe className="h-4 w-4 text-[#000000] mr-2" />
+                                        Website
+                                      </div>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label htmlFor="social-username" className="text-gray-700">
+                                  Username
+                                </Label>
+                                <div className="mb-1"></div>
+                                <Input
+                                  id="social-username"
+                                  placeholder="Enter username"
+                                  value={newSocialAccount.username}
+                                  onChange={(e) =>
+                                    user && setNewSocialAccount({ ...newSocialAccount, username: e.target.value })
+                                  }
+                                  className="rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 h-12 text-base"
+                                  disabled={!user}
+                                />
+                              </div>
+                            </div>
+                            <div className="w-full flex justify-center mt-1">
+                              <Button
+                                type="button"
+                                onClick={addSocialAccount}
+                                className="w-2/3 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                                disabled={!user}
+                              >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Social Account
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <div className="mt-4">
+                          <h4 className="text-sm font-medium mb-2 text-gray-700">Added Accounts</h4>
+                          {newInfluencer.socialAccounts.length > 0 ? (
+                            <div className="space-y-3">
+                              {newInfluencer.socialAccounts.map((account, index) => (
+                                <div
+                                  key={account.id || index}
+                                  className="flex items-center gap-3 p-3 border border-gray-100 rounded-3xl hover:bg-gray-50 transition-colors"
+                                >
+                                  <div
+                                    className={`h-10 w-10 rounded-full flex items-center justify-center ${account.color} bg-opacity-10`}
+                                  >
+                                    {renderSocialIcon(account.icon)}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="font-medium text-sm">{account.name}</p>
+                                    <p className="text-xs text-gray-500">
+                                      <span className={account.color}>{account.url}/</span>
+                                      {account.username}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 rounded-full text-red-500 hover:text-red-700 hover:bg-red-50"
+                                    onClick={() => user && removeSocialAccount(account.id || index.toString())}
+                                    disabled={!user}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-6 border border-dashed border-gray-200 rounded-lg">
+                              <p className="text-sm text-gray-500">No social accounts added yet.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
               </Accordion>
 
               <DialogFooter className="mt-8">
