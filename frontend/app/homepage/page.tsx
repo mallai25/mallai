@@ -786,12 +786,6 @@ export default function HomePage() {
                 {/* Product Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {(firebaseProducts.length > 0 ? firebaseProducts : productData)
-                    .sort((a, b) => {
-                      // Convert ids to strings and compare them
-                      const idA = String(a.id);
-                      const idB = String(b.id);
-                      return idB.localeCompare(idA);
-                    })
                     .filter((product) => {
                       if (selectedCategory === "Prelims") return true
                       // Handle the renamed category
