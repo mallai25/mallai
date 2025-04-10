@@ -49,7 +49,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
                     src={product.imageSrc || product.imageUrl}
                     alt={product.name}
                     fill
-                    className={`w-full h-full ${product.brand === "Final Boss Sour" || product.brand === "Tone" ? "object-cover" : "object-contain"}`}
+                    className={`w-full h-full ${product.brand === "Final Boss Sour" || product.brand === "Tone" || product.brand === "Goodles" ? "object-cover" : "object-contain"}`}
                     // className={`w-full h-full ${product.brand === "Final Boss Sour" ? "object-cover" : "object-contain"}`}
                   />
                 </div>
