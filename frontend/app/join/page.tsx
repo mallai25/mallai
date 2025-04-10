@@ -616,19 +616,25 @@ export default function JoinPage() {
                 </div>
               ) : (
                 (firebaseProducts.length > 0 ? firebaseProducts : productData)
-                  .filter((product) => {
-                    if (selectedCategory === "Prelims") return true
-                    // Handle the renamed category
-                    if (selectedCategory === "Snacks" && product.category.toLowerCase() === "candy") return true
-                    if (selectedCategory === "Snacks" && product.category.toLowerCase() === "snacks") return true
-                    if (selectedCategory === "Breakfast" && product.category.toLowerCase() === "breakfast") return true
-                    if (selectedCategory === "Personal Care" && 
-                      (product.category.toLowerCase() === "personal Care" || 
-                       product.category.toLowerCase() === "deodorant")) return true
-                    return product.category.toLowerCase() === selectedCategory.toLowerCase()
-                  })
-                  .slice(currentProductPage * PRODUCTS_PER_PAGE, (currentProductPage + 1) * PRODUCTS_PER_PAGE)
-                  .reverse().map((product) => (
+                .sort((a, b) => {
+                  // Convert ids to strings and compare them
+                  const idA = String(a.id);
+                  const idB = String(b.id);
+                  return idB.localeCompare(idA);
+                })
+                .filter((product) => {
+                  if (selectedCategory === "Prelims") return true
+                  // Handle the renamed category
+                  if (selectedCategory === "Snacks" && product.category.toLowerCase() === "candy") return true
+                  if (selectedCategory === "Snacks" && product.category.toLowerCase() === "snacks") return true
+                  if (selectedCategory === "Breakfast" && product.category.toLowerCase() === "breakfast") return true
+                  if (selectedCategory === "Personal Care" && 
+                    (product.category.toLowerCase() === "personal Care" || 
+                     product.category.toLowerCase() === "deodorant")) return true
+                  return product.category.toLowerCase() === selectedCategory.toLowerCase()
+                })
+                .slice(currentProductPage * PRODUCTS_PER_PAGE, (currentProductPage + 1) * PRODUCTS_PER_PAGE)
+                .map((product) => (
                     <div key={product.id} className="group w-full max-w-full sm:w-[280px] mx-auto">
                       {/* Undecided hover of Card */}
                       {/* <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full"> */}
