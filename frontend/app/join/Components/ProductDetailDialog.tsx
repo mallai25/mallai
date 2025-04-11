@@ -1,38 +1,38 @@
-'use client';
+"use client"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import Image from "next/image";
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import Image from "next/image"
+import Link from "next/link"
+import { ExternalLink } from "lucide-react"
 
 interface ProductDetailProps {
-  product: any;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  product: any
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export function ProductDetailDialog({ product, open, onOpenChange }: ProductDetailProps) {
-  if (!product) return null;
-  
+  if (!product) return null
+
   const getProductRoute = () => {
     // Handle default brands
     switch (product.brand) {
       case "JOYRIDE":
-        return "/joyride";
+        return "/joyride"
       case "NUTCASE":
-        return "/Nutcase";
+        return "/Nutcase"
       case "KETONE-IQ":
-        return "/ketone";
+        return "/ketone"
       case "ItsCalledW":
-        return "/itscalledw";
+        return "/itscalledw"
       default:
         // For other products, use their ID for the route
-        return "#";
-        // ? `/prelim?data=${encodeURIComponent(JSON.stringify({ id: product.id }))}` : "/";
+        return "#"
+      // ? `/prelim?data=${encodeURIComponent(JSON.stringify({ id: product.id }))}` : "/";
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,7 +50,6 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
                     alt={product.name}
                     fill
                     className={`w-full h-full ${product.brand === "Final Boss Sour" || product.brand === "Tone" || product.brand === "Goodles" ? "object-cover" : "object-contain"}`}
-                    // className={`w-full h-full ${product.brand === "Final Boss Sour" ? "object-cover" : "object-contain"}`}
                   />
                 </div>
               </Card>
@@ -71,7 +70,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
                 <span className="text-sm text-gray-500">Brand</span>
                 <p className="font-medium">{product.brand}</p>
               </div>
-              
+
               {product.weight && (
                 <div>
                   <span className="text-sm text-gray-500">Weight</span>
@@ -79,11 +78,15 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
                 </div>
               )}
             </div>
-            <div className="pt-2 flex justify-end">
+            <div className="pt-2 flex items-center justify-between">
+              {product.price && (
+                <div className="bg-emerald-100 text-emerald-700 font-bold text-sm px-3 py-1.5 rounded-full">
+                  {product.price}
+                </div>
+              )}
               <Link href={getProductRoute()} passHref>
-                <Button className="px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl">
-                  Visit 
-                  <ExternalLink className="ml-2 h-4 w-4" />
+                <Button className="bg-gradient-to-r from-[#5159ff] to-[#4147d5] hover:from-[#4147d5] hover:to-[#5159ff] text-white rounded-3xl px-6 py-2 shadow-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/20 flex items-center">
+                  Visit
                 </Button>
               </Link>
             </div>
@@ -91,5 +94,5 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
