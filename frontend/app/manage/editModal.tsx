@@ -79,6 +79,7 @@ interface SocialAccount {
   username: string
 }
 
+// First, update the SimilarProduct interface to include price
 interface SimilarProduct {
   id: string
   name: string
@@ -88,6 +89,7 @@ interface SimilarProduct {
   gtin?: string
   brand?: string
   mainProductId?: string
+  price?: string
 }
 
 interface EditProductDialogProps {
@@ -120,7 +122,7 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
         },
   )
 
-  // State for new similar product
+  // Update the newSimilarProduct state to include price
   const [newSimilarProduct, setNewSimilarProduct] = useState<SimilarProduct>({
     id: uuidv4(),
     name: "",
@@ -130,6 +132,7 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
     gtin: "",
     brand: product.brand || "",
     mainProductId: product.id,
+    price: product.price || "",
   })
 
   // State for new social account
@@ -143,7 +146,9 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
   })
 
   // Other state variables
+  // Add priceEditMode state near the weightEditMode state
   const [weightEditMode, setWeightEditMode] = useState(false)
+  const [priceEditMode, setPriceEditMode] = useState(false)
   const [savingData, setSavingData] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -189,6 +194,7 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
         gtin: "",
         brand: product.brand || "",
         mainProductId: product.id,
+        price: product.price || "",
       })
     }
   }, [product])
@@ -338,7 +344,7 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
       similarProducts: [...editedProduct.similarProducts, { ...newSimilarProduct, mainProductId: editedProduct.id }],
     })
 
-    // Reset the similar product form
+    // In the reset of newSimilarProduct after adding a similar product, include price
     setNewSimilarProduct({
       id: uuidv4(),
       name: "",
@@ -348,10 +354,12 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
       brand: editedProduct.brand || "",
       gtin: "",
       mainProductId: editedProduct.id,
+      price: editedProduct.price || "",
     })
 
-    // Reset weight edit mode
+    // Reset price edit mode when adding a similar product
     setWeightEditMode(false)
+    setPriceEditMode(false)
 
     toast({
       title: "Similar product added",
@@ -1072,6 +1080,53 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
                               </div>
                             </div>
                             <div>
+                              <div className="mb-1"></div>
+                              <div className="relative flex items-center">
+                                <Input
+                                  id="similar-price"
+                                  placeholder="e.g. 12.99"
+                                  value={newSimilarProduct.price}
+                                  onChange={(e) =>
+                                    priceEditMode &&
+                                    setNewSimilarProduct({ ...newSimilarProduct, price: e.target.value })
+                                  }
+                                  className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                                  disabled={!canEdit || !priceEditMode}
+                                />
+                                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                {newSimilarProduct.price && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-2 h-8 w-8 p-0 rounded-full"
+                                    onClick={() => setPriceEditMode(!priceEditMode)}
+                                    disabled={!canEdit}
+                                  >
+                                    {priceEditMode ? (
+                                      <CheckCircle className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="text-blue-500"
+                                      >
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                        <path d="m15 5 4 4" />
+                                      </svg>
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            <div>
                               <Label htmlFor="similar-gtin" className="text-gray-700">
                                 GTIN Number
                               </Label>
@@ -1129,6 +1184,7 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
                                   <span>{product.description}</span>
                                   {product.brand && <span className="text-purple-500">Brand: {product.brand}</span>}
                                   {product.weight && <span className="text-blue-500">Weight: {product.weight}</span>}
+                                  {product.price && <span className="text-green-500">Price: ${product.price}</span>}
                                   {product.gtin && <span className="text-green-500">GTIN: {product.gtin}</span>}
                                 </div>
                               </div>
@@ -1448,4 +1504,3 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
     </Dialog>
   )
 }
-
