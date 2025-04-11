@@ -76,7 +76,7 @@ export function InfluencerDialog({ influencer, product, open, onOpenChange }: In
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[710px] overflow-y-auto max-h-[90vh] p-3 sm:p-6 rounded-2xl sm:rounded-2xl">
+      <DialogContent className="sm:max-w-[700px] overflow-y-auto max-h-[90vh] p-3 sm:p-6 rounded-2xl sm:rounded-2xl">
         <DialogHeader className="mb-3 sm:mb-2">
           <DialogTitle className="text-lg sm:text-2xl">Brand Influencer</DialogTitle>
         </DialogHeader>
