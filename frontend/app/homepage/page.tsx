@@ -2,7 +2,7 @@
 
 import { DialogTrigger } from "@/components/ui/dialog"
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -84,6 +84,9 @@ interface Participant {
 
 export default function HomePage() {
   const router = useRouter()
+   // Create refs for product carousels
+  const carouselRefs = useRef({})
+
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [profileImage, setProfileImage] = useState<string | null>(null)
@@ -110,7 +113,9 @@ export default function HomePage() {
   const [age, setAge] = useState("")
   const [gender, setGender] = useState("")
   const [expandedFeatures, setExpandedFeatures] = useState(false)
-
+  const [activeSimilarProduct, setActiveSimilarProduct] = useState(null)
+  const [hoveredSimilarProduct, setHoveredSimilarProduct] = useState(null)
+  
   // Add state for Firebase products
   const [firebaseProducts, setFirebaseProducts] = useState<any[]>([])
   const [firebaseInfluencers, setFirebaseInfluencers] = useState<any[]>([])
@@ -186,6 +191,19 @@ export default function HomePage() {
 
     return () => unsubscribe()
   }, [router, dataMode])
+
+  const handleSimilarProductClick = (product, similarProduct) => {
+    // Set the active similar product when clicked
+    setActiveSimilarProduct(similarProduct)
+    setSelectedProduct({
+      ...product,
+      ...similarProduct,
+      brand: product.brand,
+      category: product.category,
+      priceUnit: product.priceUnit,
+    })
+    setShowProductDialog(true)
+  }
 
   // Updated profile image upload function using axios
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -924,15 +942,26 @@ export default function HomePage() {
                                           <div
                                             id={`product-carousel-${product.id}`}
                                             className="flex overflow-x-auto sm:overflow-x-hidden scroll-smooth px-0 sm:px-0 gap-3 sm:gap-6 snap-x snap-mandatory sm:snap-none pb-4 sm:pb-0 -mx-2 sm:mx-0"
-                                          >
+                                            ref={(el) => {
+                                              if (el) carouselRefs.current[product.id] = el
+                                            }}
+                                         >
                                             {product.similarProducts?.map((item: any) => (
                                               <div
                                                 key={item.id}
                                                 className="flex-none w-[80%] sm:w-1/3 snap-center first:ml-2 sm:first:ml-0"
                                               >
-                                                <div className="border border-gray-100 rounded-xl p-3 hover:border-blue-200 transition-colors group/card">
+                                                <div className="border border-gray-100 rounded-xl p-3 hover:border-blue-200 transition-colors group/card"
+                                                onClick={() => handleSimilarProductClick(product, item)}
+                                                onMouseEnter={() => setHoveredSimilarProduct(item)}
+                                                onMouseLeave={() => setHoveredSimilarProduct(null)}>
                                                   <div className="relative aspect-square rounded-lg overflow-hidden cursor-pointer">
                                                     <div className="absolute inset-0 duration-300 z-10"></div>
+                                                    {hoveredSimilarProduct === item && (
+                                                    <div className="absolute top-1 left-1 z-20 bg-emerald-100 text-emerald-700 font-bold text-xs px-2 py-1 rounded-full">
+                                                      {item.price || product.price}
+                                                    </div>
+                                                  )}
                                                     <Button
                                                       variant="ghost"
                                                       size="sm"
@@ -965,16 +994,14 @@ export default function HomePage() {
                                           </div>
 
                                           <button
-                                            className="absolute -right-1 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white shadow-xl hover:bg-gray-50 transition-all border border-gray-100 hidden sm:flex items-center justify-center hover:scale-110"
-                                            onClick={() => {
-                                              const container = document.getElementById(
-                                                `product-carousel-${product.id}`,
-                                              )
-                                              if (container) container.scrollLeft += container.offsetWidth / 2
-                                            }}
-                                          >
-                                            <ChevronRight className="w-5 h-5 text-gray-700" />
-                                          </button>
+                                                                                    className="absolute -right-1 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white shadow-xl hover:bg-gray-50 transition-all border border-gray-100 hidden sm:flex items-center justify-center hover:scale-110"
+                                                                                    onClick={() => {
+                                                                                      const container = carouselRefs.current[product.id]
+                                                                                      if (container) container.scrollLeft += container.offsetWidth / 2
+                                                                                    }}
+                                                                                  >
+                                                                                    <ChevronRight className="w-5 h-5 text-gray-700" />
+                                                                                  </button>
                                         </div>
                                       </div>
                                     </div>
@@ -1212,6 +1239,7 @@ export default function HomePage() {
       </div>
     </header>
   )
+  
 
   return (
     <div className="min-h-screen bg-white">
