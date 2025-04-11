@@ -81,6 +81,7 @@ interface Influencer {
   socialAccounts: SocialAccount[]
 }
 
+// First, update the SimilarProduct interface to include price
 interface SimilarProduct {
   id: string
   name: string
@@ -90,6 +91,7 @@ interface SimilarProduct {
   gtin?: string
   brand?: string // Add this line
   mainProductId?: string // Add this field to store the reference to the main product
+  price?: string // Add this field for the price
 }
 
 interface Product {
@@ -165,7 +167,7 @@ export default function ManagePage() {
     socialAccounts: [],
   })
 
-  // Similar product form state
+  // Update the newSimilarProduct state to include price
   const [newSimilarProduct, setNewSimilarProduct] = useState<SimilarProduct>({
     id: uuidv4(),
     name: "",
@@ -174,6 +176,7 @@ export default function ManagePage() {
     weight: "",
     gtin: "",
     brand: "", // Add this line
+    price: "", // Initialize price as empty string
   })
 
   // Social account form state
@@ -193,6 +196,9 @@ export default function ManagePage() {
   // First, add a new state to track if the weight field is in edit mode
   // Add this near the other state declarations
   const [weightEditMode, setWeightEditMode] = useState(false)
+
+  // Add a new state for price edit mode (add this near the weightEditMode state)
+  const [priceEditMode, setPriceEditMode] = useState(false)
 
   // Add this near the other state declarations
   const [mainProductId, setMainProductId] = useState<string>(newProduct.id)
@@ -455,7 +461,21 @@ export default function ManagePage() {
       similarProducts: [...newProduct.similarProducts, { ...newSimilarProduct, mainProductId }],
     })
 
-    // Reset the similar product form
+    // Update the addSimilarProduct function to pre-fill the similar product with the main product's price
+    // Find where you set the mainAsSimilar object and add the price field:
+    const mainAsSimilar: SimilarProduct = {
+      id: uuidv4(),
+      name: newProduct.name,
+      description: newProduct.description || `Original ${newProduct.name}`,
+      imageUrl: newProduct.imageSrc,
+      weight: newProduct.weight,
+      gtin: newProduct.gtin,
+      brand: newProduct.brand, // Explicitly add the brand name from the main product
+      mainProductId: newProduct.id, // Add the main product ID reference to itself
+      price: newProduct.price, // Add the price from the main product
+    }
+
+    // Reset logic in addSimilarProduct function to include price
     setNewSimilarProduct({
       id: uuidv4(),
       name: "",
@@ -465,10 +485,12 @@ export default function ManagePage() {
       brand: newProduct.brand || "", // Keep pre-filling with the main product brand
       gtin: "",
       mainProductId, // Keep the reference to the main product ID
+      price: newProduct.price || "", // Keep pre-filling with the main product price
     })
 
-    // Reset weight edit mode
+    // Reset price edit mode along with weight edit mode
     setWeightEditMode(false)
+    setPriceEditMode(false)
 
     toast({
       title: "Similar product added",
@@ -932,7 +954,7 @@ export default function ManagePage() {
                     whileHover={{ y: -5 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 group-hover:border-blue-200 h-full rounded-2xl">
+                    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 group-hover:border-blue-200 h-full rounded-3xl">
                       <div className="bg-gradient-to-br from-gray-50 to-gray-100 h-48 flex items-center justify-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <Image
@@ -1579,6 +1601,8 @@ export default function ManagePage() {
                               className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                               onClick={() => {
                                 // Add the main product as the first similar product
+                                // Update the addSimilarProduct function to pre-fill the similar product with the main product's price
+                                // Find where you set the mainAsSimilar object and add the price field:
                                 const mainAsSimilar: SimilarProduct = {
                                   id: uuidv4(),
                                   name: newProduct.name,
@@ -1588,6 +1612,7 @@ export default function ManagePage() {
                                   gtin: newProduct.gtin,
                                   brand: newProduct.brand, // Explicitly add the brand name from the main product
                                   mainProductId: newProduct.id, // Add the main product ID reference to itself
+                                  price: newProduct.price, // Add the price from the main product
                                 }
 
                                 // Update the mainProductId state with the current product ID
@@ -1598,12 +1623,13 @@ export default function ManagePage() {
                                   similarProducts: [mainAsSimilar, ...newProduct.similarProducts],
                                 })
 
-                                // Pre-fill the similar product form with the weight, brand, and mainProductId from the main product
+                                // Update the pre-fill logic for newSimilarProduct to include price
                                 setNewSimilarProduct({
                                   ...newSimilarProduct,
                                   weight: newProduct.weight || "",
                                   brand: newProduct.brand || "",
                                   mainProductId: newProduct.id, // Add the main product ID reference
+                                  price: newProduct.price || "", // Pre-fill with the main product's price
                                 })
 
                                 // Reset weight edit mode
@@ -1750,6 +1776,7 @@ export default function ManagePage() {
                                   disabled={!user}
                                 />
                               </div>
+                            
                               <div>
                                 <Label htmlFor="similar-weight" className="text-gray-700">
                                   Weight
@@ -1778,6 +1805,53 @@ export default function ManagePage() {
                                       onClick={() => setWeightEditMode(!weightEditMode)}
                                     >
                                       {weightEditMode ? (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                      ) : (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          className="text-blue-500"
+                                        >
+                                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                          <path d="m15 5 4 4" />
+                                        </svg>
+                                      )}
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="mb-1"></div>
+                                <div className="relative flex items-center">
+                                  <Input
+                                    id="similar-price"
+                                    placeholder="e.g. 12.99"
+                                    value={newSimilarProduct.price}
+                                    onChange={(e) =>
+                                      user &&
+                                      priceEditMode &&
+                                      setNewSimilarProduct({ ...newSimilarProduct, price: e.target.value })
+                                    }
+                                    className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
+                                    disabled={!user || !priceEditMode}
+                                  />
+                                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                  {user && newSimilarProduct.price && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="absolute right-2 h-8 w-8 p-0 rounded-full"
+                                      onClick={() => setPriceEditMode(!priceEditMode)}
+                                    >
+                                      {priceEditMode ? (
                                         <CheckCircle className="h-4 w-4 text-green-500" />
                                       ) : (
                                         <svg
@@ -1860,6 +1934,7 @@ export default function ManagePage() {
                                     <span>{product.description}</span>
                                     {product.brand && <span className="text-purple-500">Brand: {product.brand}</span>}
                                     {product.weight && <span className="text-blue-500">Weight: {product.weight}</span>}
+                                    {product.price && <span className="text-green-500">Price: {product.price}</span>}
                                     {product.gtin && <span className="text-green-500">GTIN: {product.gtin}</span>}
                                   </div>
                                 </div>
