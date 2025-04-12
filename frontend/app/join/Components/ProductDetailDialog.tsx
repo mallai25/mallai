@@ -46,7 +46,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
               <Card>
                 <div className="relative h-[300px] rounded-xl overflow-hidden">
                   <Image
-                    src={product.imageSrc || product.imageUrl}
+                    src={product.imageUrl || product.imageSrc || "/placeholder.svg"}
                     alt={product.name}
                     fill
                     className={`w-full h-full ${product.brand === "Final Boss Sour" || product.brand === "Tone" || product.brand === "Goodles" ? "object-cover" : "object-contain"}`}
