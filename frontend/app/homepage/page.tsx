@@ -192,18 +192,6 @@ export default function HomePage() {
     return () => unsubscribe()
   }, [router, dataMode])
 
-  const handleSimilarProductClick = (product, similarProduct) => {
-    // Set the active similar product when clicked
-    setActiveSimilarProduct(similarProduct)
-    setSelectedProduct({
-      ...product,
-      ...similarProduct,
-      brand: product.brand,
-      category: product.category,
-      priceUnit: product.priceUnit,
-    })
-    setShowProductDialog(true)
-  }
 
   // Updated profile image upload function using axios
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -274,8 +262,15 @@ export default function HomePage() {
     }
   }
 
-  const handleProductQRClick = (product: any) => {
-    setSelectedProduct(product)
+  const handleProductQRClick = (product, similarProduct) => {
+    setSelectedProduct({
+      ...product,
+      ...similarProduct,
+      imageUrl: similarProduct.imageUrl || product.imageUrl, // Use similar product's image first, fallback to parent product
+      brand: product.brand,
+      category: product.category,
+      priceUnit: product.priceUnit,
+    })
     setShowProductDialog(true)
   }
 
@@ -952,7 +947,6 @@ export default function HomePage() {
                                                 className="flex-none w-[80%] sm:w-1/3 snap-center first:ml-2 sm:first:ml-0"
                                               >
                                                 <div className="border border-gray-100 rounded-xl p-3 hover:border-blue-200 transition-colors group/card"
-                                                onClick={() => handleSimilarProductClick(product, item)}
                                                 onMouseEnter={() => setHoveredSimilarProduct(item)}
                                                 onMouseLeave={() => setHoveredSimilarProduct(null)}>
                                                   <div className="relative aspect-square rounded-lg overflow-hidden cursor-pointer">
@@ -966,7 +960,7 @@ export default function HomePage() {
                                                       variant="ghost"
                                                       size="sm"
                                                       className="absolute top-1 right-1 z-20 h-8 w-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-500 p-0 shadow-md border-2 border-white transition-all group"
-                                                      onClick={() => handleProductQRClick(item)}
+                                                      onClick={() => handleProductQRClick(product, item)}
                                                     >
                                                       <QrCode className="h-5 w-5 text-white" />
                                                     </Button>
@@ -1346,4 +1340,3 @@ export default function HomePage() {
     </div>
   )
 }
-
