@@ -127,6 +127,10 @@ export default function ManagePage() {
   const [accountType, setAccountType] = useState("cpg")
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
+  // Add a new state to track which product is being considered for deletion
+  // Add this near the other state declarations
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+
   // Form states for login/register
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -280,7 +284,7 @@ export default function ManagePage() {
   // Fetch products from Firestore
   const fetchProducts = async () => {
     try {
-      const listedProductsCollection = collection(FIREBASE_DB, "listingsMade")
+      const listedProductsCollection = collection(FIREBASE_DB, "listingTry")
       const listedProductsSnapshot = await getDocs(listedProductsCollection)
       const productsList = listedProductsSnapshot.docs.map((doc) => doc.data() as Product)
       setProducts(productsList)
@@ -661,7 +665,7 @@ export default function ManagePage() {
       }
 
       // Save to Firestore in listedProducts collection
-      await setDoc(doc(FIREBASE_DB, "listingsMade", productToSave.id), productToSave)
+      await setDoc(doc(FIREBASE_DB, "listingTry", productToSave.id), productToSave)
 
       // Refresh products list
       await fetchProducts()
@@ -721,18 +725,23 @@ export default function ManagePage() {
     }
   }
 
+  // Find the deleteProduct function and modify it to handle the confirmation flow
+  // Replace the existing deleteProduct function with this:
   // Delete product from Firestore
   const deleteProduct = async (id: string) => {
     if (!checkAuth()) return
 
     try {
-      await deleteDoc(doc(FIREBASE_DB, "listingsMade", id))
+      await deleteDoc(doc(FIREBASE_DB, "listingTry", id))
       await fetchProducts()
 
       toast({
         title: "Product deleted successfully",
         description: "The product has been removed from the database.",
       })
+
+      // Close the confirmation dialog
+      setProductToDelete(null)
     } catch (error) {
       console.error("Error deleting product:", error)
       toast({
@@ -810,7 +819,7 @@ export default function ManagePage() {
             <Link href="/">
               <div className="flex items-center gap-2">
                 <Avatar className="w-9 h-9 rounded-xl">
-                  <AvatarImage src={LogoImage.src} alt="" />
+                  <AvatarImage src={LogoImage.src || "/placeholder.svg"} alt="" />
                 </Avatar>
                 <span className="text-xl font-semibold text-zinc-800">Mall ai</span>
               </div>
@@ -961,19 +970,22 @@ export default function ManagePage() {
                           src={product.imageSrc || "/placeholder.svg?height=200&width=200"}
                           alt={product.name}
                           // Duck Tape For Now
-                          {...(product.brand === "Black Rifle Coffee" || product.brand === "Alani Nu" || product.brand === "Kin Euphorics"
+                          {...(product.brand === "Black Rifle Coffee" ||
+                          product.brand === "Alani Nu" ||
+                          product.brand === "Kin Euphorics"
                             ? {
                                 width: 100,
                                 height: 100,
                               }
                             : {
-                              width: 160,
-                              height: 160,
-                              }
-                          )}
+                                width: 160,
+                                height: 160,
+                              })}
                           className={`object-contain group-hover:scale-110 transition-transform duration-300 z-10 ${
-                            product.brand === "Black Rifle Coffee" || product.brand === "Alani Nu" || product.brand === "Kin Euphorics" 
-                              ? "object-cover" 
+                            product.brand === "Black Rifle Coffee" ||
+                            product.brand === "Alani Nu" ||
+                            product.brand === "Kin Euphorics"
+                              ? "object-cover"
                               : "object-contain"
                           }`}
                         />
@@ -1023,9 +1035,9 @@ export default function ManagePage() {
                               variant="outline"
                               className="mt-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
                             >
-                              {product.brand === "Drink BRĒZ" || product.brand === "Kin Euphorics" 
-                              ? "Non-Alcoholic" 
-                              : product.category}
+                              {product.brand === "Drink BRĒZ" || product.brand === "Kin Euphorics"
+                                ? "Non-Alcoholic"
+                                : product.category}
                             </Badge>
                           </div>
                           <div className="flex items-center bg-green-50 px-3 py-1 rounded-full border border-green-100">
@@ -1044,7 +1056,7 @@ export default function ManagePage() {
                             variant="destructive"
                             size="sm"
                             className="rounded-full"
-                            onClick={() => deleteProduct(product.id)}
+                            onClick={() => setProductToDelete(product)}
                             disabled={!user || (product.uploaderId && user && product.uploaderId !== user.uid)}
                             title={
                               !user
@@ -1791,7 +1803,7 @@ export default function ManagePage() {
                                   disabled={!user}
                                 />
                               </div>
-                            
+
                               <div>
                                 <Label htmlFor="similar-weight" className="text-gray-700">
                                   Weight
@@ -2296,6 +2308,27 @@ export default function ManagePage() {
           onProductUpdated={fetchProducts}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <DialogContent className="sm:max-w-[425px] rounded-lg">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+           <div className="mb-4"></div>
+            <DialogDescription>
+              Are you sure you want to delete this product? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setProductToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => productToDelete && deleteProduct(productToDelete.id)}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Toaster />
     </div>
