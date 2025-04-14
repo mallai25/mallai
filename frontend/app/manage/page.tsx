@@ -284,7 +284,7 @@ export default function ManagePage() {
   // Fetch products from Firestore
   const fetchProducts = async () => {
     try {
-      const listedProductsCollection = collection(FIREBASE_DB, "listingTry")
+      const listedProductsCollection = collection(FIREBASE_DB, "listingsMade")
       const listedProductsSnapshot = await getDocs(listedProductsCollection)
       const productsList = listedProductsSnapshot.docs.map((doc) => doc.data() as Product)
       setProducts(productsList)
@@ -665,7 +665,7 @@ export default function ManagePage() {
       }
 
       // Save to Firestore in listedProducts collection
-      await setDoc(doc(FIREBASE_DB, "listingTry", productToSave.id), productToSave)
+      await setDoc(doc(FIREBASE_DB, "listingsMade", productToSave.id), productToSave)
 
       // Refresh products list
       await fetchProducts()
@@ -732,7 +732,7 @@ export default function ManagePage() {
     if (!checkAuth()) return
 
     try {
-      await deleteDoc(doc(FIREBASE_DB, "listingTry", id))
+      await deleteDoc(doc(FIREBASE_DB, "listingsMade", id))
       await fetchProducts()
 
       toast({
