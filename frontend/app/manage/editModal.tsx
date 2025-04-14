@@ -39,11 +39,31 @@ import {
   X,
   Upload,
   Globe,
+  GripVertical,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
 import { InstagramIcon as TiktokIcon } from "lucide-react"
 import axios from "axios"
+
+// Import DnD kit libraries
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 interface Product {
   id: string
@@ -97,6 +117,57 @@ interface EditProductDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onProductUpdated: () => Promise<void>
+}
+
+// Create a SortableItem component for the similar products
+function SortableItem({ id, item, onRemove, canEdit }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="mb-3">
+      <div className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+        <div
+          className={`${canEdit ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed"} p-2 text-gray-400 transition-colors`}
+          {...(canEdit ? { ...attributes, ...listeners } : {})}
+        >
+          <GripVertical className={`h-5 w-5 ${!canEdit && "opacity-50"}`} />
+        </div>
+        <div className="h-12 w-12 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
+          <Image
+            src={item.imageUrl || "/placeholder.svg?height=48&width=48"}
+            alt={item.name}
+            width={48}
+            height={48}
+            className="object-contain"
+          />
+        </div>
+        <div className="flex-1">
+          <p className="font-medium text-sm">{item.name}</p>
+          <div className="flex gap-2 text-xs text-gray-500">
+            <span>{item.description}</span>
+            {item.brand && <span className="text-purple-500">Brand: {item.brand}</span>}
+            {item.weight && <span className="text-blue-500">Weight: {item.weight}</span>}
+            {item.price && <span className="text-green-500">Price: {item.price}</span>}
+            {item.gtin && <span className="text-green-500">GTIN: {item.gtin}</span>}
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-8 w-8 p-0 rounded-full text-red-500 hover:text-red-700 hover:bg-red-50 ${!canEdit && "opacity-50 cursor-not-allowed"}`}
+          onClick={() => canEdit && onRemove(id)}
+          disabled={!canEdit}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
 }
 
 export function EditProductDialog({ product, open, onOpenChange, onProductUpdated }: EditProductDialogProps) {
@@ -153,6 +224,14 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
   const [uploadingImage, setUploadingImage] = useState(false)
   const [user, setUser] = useState<any>(null)
   const canEdit = user && user.uid === product?.uploaderId
+
+  // Set up DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  )
 
   // Refs for file inputs
   const productImageInputRef = useRef<HTMLInputElement>(null)
@@ -379,6 +458,30 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
       title: "Similar product removed",
       description: "The similar product has been removed from your product.",
     })
+  }
+
+  // Handle drag end for similar products reordering
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (!canEdit) return
+
+    const { active, over } = event
+
+    if (over && active.id !== over.id) {
+      setEditedProduct((prev) => {
+        const oldIndex = prev.similarProducts.findIndex((item) => item.id === active.id)
+        const newIndex = prev.similarProducts.findIndex((item) => item.id === over.id)
+
+        return {
+          ...prev,
+          similarProducts: arrayMove(prev.similarProducts, oldIndex, newIndex),
+        }
+      })
+
+      toast({
+        title: "Products reordered",
+        description: "The order of similar products has been updated.",
+      })
+    }
   }
 
   // Handle social platform change
@@ -816,7 +919,7 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
                               onChange={(e) => {
                                 // Remove any existing $ symbol and only allow numbers and decimal point
                                 const value = e.target.value.replace(/^\$/, "").replace(/[^\d.]/g, "")
-                                setEditedProduct({ ...editedProduct, price: value ? `$${value}` : "" })
+                                setEditedProduct({ ...editedProduct, price: value ? `${value}` : "" })
                               }}
                               className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-12 text-base"
                               disabled={!canEdit}
@@ -1080,6 +1183,9 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
                               </div>
                             </div>
                             <div>
+                              <Label htmlFor="similar-price" className="text-gray-700">
+                                Price
+                              </Label>
                               <div className="mb-1"></div>
                               <div className="relative flex items-center">
                                 <Input
@@ -1161,45 +1267,32 @@ export function EditProductDialog({ product, open, onOpenChange, onProductUpdate
                     </Card>
 
                     <div className="mt-6">
-                      <h4 className="text-sm font-medium mb-2 text-gray-700">Added Similar Products</h4>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-medium text-gray-700">Added Similar Products</h4>
+                        {canEdit && editedProduct.similarProducts.length > 0 && (
+                          <span className="text-xs text-gray-500">Drag to reorder</span>
+                        )}
+                      </div>
+
                       {editedProduct.similarProducts && editedProduct.similarProducts.length > 0 ? (
-                        <div className="space-y-3">
-                          {editedProduct.similarProducts.map((product) => (
-                            <div
-                              key={product.id}
-                              className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              <div className="h-12 w-12 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50">
-                                <Image
-                                  src={product.imageUrl || "/placeholder.svg?height=48&width=48"}
-                                  alt={product.name}
-                                  width={48}
-                                  height={48}
-                                  className="object-contain"
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                          <SortableContext
+                            items={editedProduct.similarProducts.map((product) => product.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="space-y-3">
+                              {editedProduct.similarProducts.map((product) => (
+                                <SortableItem
+                                  key={product.id}
+                                  id={product.id}
+                                  item={product}
+                                  onRemove={removeSimilarProduct}
+                                  canEdit={canEdit}
                                 />
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-medium text-sm">{product.name}</p>
-                                <div className="flex gap-2 text-xs text-gray-500">
-                                  <span>{product.description}</span>
-                                  {product.brand && <span className="text-purple-500">Brand: {product.brand}</span>}
-                                  {product.weight && <span className="text-blue-500">Weight: {product.weight}</span>}
-                                  {product.price && <span className="text-green-500">Price: ${product.price}</span>}
-                                  {product.gtin && <span className="text-green-500">GTIN: {product.gtin}</span>}
-                                </div>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 rounded-full text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => removeSimilarProduct(product.id)}
-                                disabled={!canEdit}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              ))}
                             </div>
-                          ))}
-                        </div>
+                          </SortableContext>
+                        </DndContext>
                       ) : (
                         <div className="text-center py-6 border border-dashed border-gray-200 rounded-lg">
                           <p className="text-sm text-gray-500">No similar products added yet.</p>
