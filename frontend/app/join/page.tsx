@@ -655,9 +655,22 @@ export default function JoinPage() {
                           <Image
                             src={product.imageSrc || product.imageUrl || "/placeholder.svg"}
                             alt={product.name}
-                            width={160}
-                            height={160}
-                            className="object-contain cursor-pointer group-hover:scale-110 transition-transform duration-300"
+                            // Duck Tape For Now
+                            {...(product.brand === "Black Rifle Coffee" || product.brand === "Alani Nu" || product.brand === "Kin Euphorics" 
+                              ? {
+                                  width: 100,
+                                  height: 100,
+                                }
+                              : {
+                                width: 160,
+                                height: 160,
+                                }
+                            )}
+                            className={`cursor-pointer group-hover:scale-110 transition-transform duration-300 ${
+                              product.brand === "Black Rifle Coffee" || product.brand === "Alani Nu" || product.brand === "Kin Euphorics" 
+                                ? "object-cover" 
+                                : "object-contain"
+                            }`}
                           />
                           {product.influencer && (
                             <button
@@ -680,7 +693,11 @@ export default function JoinPage() {
                               <h3 className="font-bold text-lg">{product.brand}</h3>
                             </div>
                           </div>
-                          <p className="text-gray-600 text-sm mb-1 line-clamp-2">{product.category}</p>
+                          <p className="text-gray-600 text-sm mb-1 line-clamp-2">
+                            {product.brand === "Drink BRĒZ" || product.brand === "Kin Euphorics" 
+                              ? "Non-Alcoholic" 
+                              : product.category}
+                          </p>
                           <div className="flex justify-between items-center mb-0.5">
                             <div className="flex items-center">
                               <span className="text-lg font-bold">{product.price}</span>
@@ -702,7 +719,7 @@ export default function JoinPage() {
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="w-[95vw] max-w-[950px] p-0 rounded-lg">
-                                <ScrollArea className="h-[84vh] p-4 rounded-md">
+                                <ScrollArea className="h-[86vh] p-4 rounded-md">
                                   <div className="mt-5 p-0 sm:p-1">
                                     <DialogHeader className="mb-4 sm:mb-6">
                                       <div className="sm:flex sm:items-center">
@@ -791,9 +808,22 @@ export default function JoinPage() {
                                                       <Image
                                                         src={item.imageUrl || "/placeholder.svg"}
                                                         alt={item.name}
-                                                        layout="fill"
-                                                        objectFit="cover"
-                                                        className="object-contain transform scale-75 group-hover/card:scale-90 transition-transform duration-300 ease-in-out rounded-xl"
+                                                        // Duck Tape For Now
+                                                        {...(product.brand === "Black Rifle Coffee" || product.brand === "Kin Euphorics" || product.brand === "BestBreakFasts"
+                                                          ? {
+                                                              width: 200,
+                                                              height: 200,
+                                                            }
+                                                          : {
+                                                              layout: "fill",
+                                                              objectFit: "cover",
+                                                            }
+                                                        )}
+                                                        className={`transform scale-75 group-hover/card:scale-90 transition-transform duration-300 ease-in-out rounded-xl ${
+                                                          product.brand === "Black Rifle Coffee" || product.brand === "Kin Euphorics" || product.brand === "BestBreakFasts"
+                                                            ? "object-cover" 
+                                                            : "object-contain"
+                                                        }`}
                                                       />
                                                     </div>
                                                   </div>

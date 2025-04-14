@@ -36,7 +36,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] rounded-2xl sm:rounded-2xl">
+      <DialogContent className="sm:max-w-[640px] rounded-2xl sm:rounded-2xl">
         <DialogHeader>
           <DialogTitle>Product Details</DialogTitle>
         </DialogHeader>
@@ -49,7 +49,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
                     src={product.imageUrl || product.imageSrc || "/placeholder.svg"}
                     alt={product.name}
                     fill
-                    className={`w-full h-full ${product.brand === "Final Boss Sour" || product.brand === "Tone" || product.brand === "Goodles" ? "object-cover" : "object-contain"}`}
+                    className={`w-full h-full ${product.brand === "Final Boss Sour" || product.brand === "Tone" || product.brand === "Goodles" || product.brand === "PAPATUI" ? "object-cover" : "object-contain"}`}
                   />
                 </div>
               </Card>
@@ -78,7 +78,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
                 </div>
               )}
             </div>
-            <div className="pt-2 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               {product.price && (
                 <div className="bg-emerald-100 text-emerald-700 font-bold text-sm px-3 py-1.5 rounded-full">
                   {product.price}
