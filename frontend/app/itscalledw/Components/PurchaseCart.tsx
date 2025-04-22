@@ -116,7 +116,7 @@ export const ProductCard = ({ name, description, storeLocations }: ProductCardPr
                             </div>
                           </Button>
                           <div className="text-gray-500 font-medium">
-                            Total: $6.97
+                            Total: $8.99
                           </div>
                         </div>
                         <Button 
