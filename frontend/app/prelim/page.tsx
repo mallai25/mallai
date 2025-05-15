@@ -75,7 +75,7 @@ function ProductContent() {
   const [polls, setPolls] = useState([]);
   const [campaigns, setCampaigns] = useState([])
 
-  // Add loading timer effect
+  // Add loading timer effect here
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
